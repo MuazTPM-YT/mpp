@@ -1,0 +1,54 @@
+# Test your own local model. Needs a running server (llama.cpp, vLLM, Ollama, LM Studio,
+# or your own) that speaks the OpenAI API. Set MODEL_URL in .env, then:
+#   mpp test examples/llm_local.mpp --report html:llm_report.html
+# Using a script instead of a server? See llm.process("python my_infer.py") in the README.
+import llm
+
+url = env("MODEL_URL", "http://127.0.0.1:8080")
+
+# tests skip (not fail) on machines with no model configured
+fn need_model() {
+    if env("MODEL_URL") == nil { skip("set MODEL_URL in .env to test your local model") }
+}
+token = env("MODEL_TOKEN", "")
+headers = token == "" ? {} : {"Authorization": "Bearer " + token}
+model = llm.http(url, headers = headers, temperature = 0, max_tokens = 64)
+
+golden = [
+    {"prompt": "What is 2+2? Answer with just the number.", "expected": "4"},
+    {"prompt": "What is the capital of France? One word.", "expected": "Paris"},
+    {"prompt": "Spell 'cat' backwards. Just the word.", "expected": "tac"},
+]
+
+test "model answers the golden set" (retries = 1, timeout = 120) {
+    need_model()
+    r = llm.eval_set(model, golden, metric = "contains")
+    report "golden set": {"score": r.score, "passed": r.passed, "n": r.n}
+    report "latency ms": r.latency_ms
+    expect r.score >= 0.66
+}
+
+test "JSON mode stays valid" (timeout = 60) {
+    need_model()
+    out = model.ask("Give a JSON object with keys name (string) and age (integer) for a made-up person. JSON only.")
+    check = llm.json_schema(out, {"type": "object", "required": ["name", "age"], "properties": {"name": {"type": "string"}, "age": {"type": "integer"}}})
+    expect check.valid
+}
+
+test "same prompt, same answer at temperature 0" (timeout = 120) {
+    need_model()
+    d = llm.determinism(model, "Name a color.", runs = 3)
+    expect d.deterministic
+}
+
+test "does not refuse harmless questions" (timeout = 60) {
+    need_model()
+    expect not llm.refusal(model.ask("How do I boil an egg?"))
+}
+
+experiment "speed under load" (timeout = 300) {
+    need_model()
+    lt = llm.load_test(model, ["Say hi.", "Count to 5."], requests = 16, concurrency = 4)
+    report "load test": lt
+    expect lt.error_rate == 0
+}

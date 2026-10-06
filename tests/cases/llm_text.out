@@ -1,0 +1,14 @@
+1.0 0.0 0.5
+0.8 0.5714285714285714 2
+true false true
+42 ["1", "22", "333"]
+true false [1, 2]
+false ["value: missing key \"name\"", "age: -3 is below minimum 0", "tags[1]: expected string, got number"]
+0.2541 {"rouge1": 0.75, "rouge2": 0.3333333333333333, "rougeL": 0.75}
+82.609 {"precision": 0.5, "recall": 0.5, "f1": 0.5}
+true false
+0.0 1.0 0.7183
+{"p50": 30.0, "p90": 616.0000000000001, "p95": 807.9999999999998, "p99": 961.5999999999999, "mean": 220.0, "max": 1000.0, "n": 5}
+2.718282
+false ["nan_loss"] 1.5
+true <chart loss>

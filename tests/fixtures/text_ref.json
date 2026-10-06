@@ -1,0 +1,63 @@
+[
+ {
+  "cand": "the cat sat on the mat",
+  "refs": [
+   "the cat is on the mat",
+   "there is a cat on the mat"
+  ],
+  "bleu": 7.262123179505913e-78,
+  "bleu_smooth": 0.25406637407730737,
+  "rouge1": 0.8333333333333334,
+  "rouge2": 0.6,
+  "rougeL": 0.8333333333333334,
+  "chrf": 64.5779420625287
+ },
+ {
+  "cand": "a quick brown fox jumps over the lazy dog",
+  "refs": [
+   "the quick brown fox jumped over the lazy dog"
+  ],
+  "bleu": 0.43167001068522526,
+  "bleu_smooth": 0.43167001068522526,
+  "rouge1": 0.7777777777777778,
+  "rouge2": 0.625,
+  "rougeL": 0.7777777777777778,
+  "chrf": 78.70015095304093
+ },
+ {
+  "cand": "Paris is the capital of France.",
+  "refs": [
+   "The capital of France is Paris."
+  ],
+  "bleu": 8.38826642100846e-155,
+  "bleu_smooth": 0.09554427922043669,
+  "rouge1": 1.0,
+  "rouge2": 0.6,
+  "rougeL": 0.6666666666666666,
+  "chrf": 74.24971405406188
+ },
+ {
+  "cand": "hello world",
+  "refs": [
+   "goodbye moon"
+  ],
+  "bleu": 0,
+  "bleu_smooth": 0,
+  "rouge1": 0.0,
+  "rouge2": 0.0,
+  "rougeL": 0.0,
+  "chrf": 6.172839506172839
+ },
+ {
+  "cand": "It is raining, and the streets are wet!",
+  "refs": [
+   "The streets are wet because it is raining."
+  ],
+  "bleu": 7.176381577237209e-155,
+  "bleu_smooth": 0.06500593260343691,
+  "rouge1": 0.875,
+  "rouge2": 0.7142857142857143,
+  "rougeL": 0.5,
+  "chrf": 62.78518423004379
+ }
+]

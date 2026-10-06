@@ -2,3 +2,5 @@
 .env
 *.mppc
 __snapshots__/*.new
+/report.html
+/*_report.html

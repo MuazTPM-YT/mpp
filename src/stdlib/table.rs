@@ -712,7 +712,8 @@ fn render(t: &Table, max: usize) -> String {
             if s.is_empty() || s == "-" { "0".into() } else { s }
         }
         Value::Int(n) => n.to_string(),
-        Value::Str(s) => s.chars().take(30).collect(),
+        Value::Str(s) if s.chars().count() > 48 => s.chars().take(47).collect::<String>() + "…",
+        Value::Str(s) => s.to_string(),
         _ => "?".into(),
     };
     let grid: Vec<Vec<String>> = t.cols.iter().map(|c| (0..shown).map(|i| cell(c, i)).collect()).collect();

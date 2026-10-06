@@ -55,6 +55,7 @@ pub static BUILTINS: &[Native] = natives![
     "load_csv" => super::table::load_csv,
     "load_jsonl" => super::table::load_jsonl,
     "load_json" => super::table::load_json,
+    "plot" => super::chart::plot,
 ];
 
 fn print(vm: &mut Vm, a: Args) -> R {

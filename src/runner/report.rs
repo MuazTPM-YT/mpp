@@ -138,6 +138,7 @@ fn indent(s: &str, n: usize) -> String {
 fn report_item(label: &str, v: &J, text: &str, n: usize) -> String {
     let pad = " ".repeat(n);
     match v {
+        J::Object(m) if m.contains_key("svg") => format!("{pad}{label}: chart (open the HTML report to see it)\n"),
         J::Object(m) if !m.is_empty() => {
             let mut o = format!("{pad}{label}:\n");
             let w = m.keys().map(|k| k.chars().count()).max().unwrap_or(0);

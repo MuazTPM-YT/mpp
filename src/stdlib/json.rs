@@ -59,6 +59,10 @@ pub fn to_json(v: &Value, depth: usize) -> Result<J, Flow> {
             J::Object(o)
         }
         Value::Error(e) => serde_json::json!({"kind": &*e.kind, "message": &*e.message}),
+        Value::Object(_) if v.object::<super::chart::Chart>().is_some() => {
+            let c = v.object::<super::chart::Chart>().unwrap();
+            serde_json::json!({"chart": c.title, "svg": c.svg})
+        }
         // vecs become number arrays (NaN as null), tables become row lists
         Value::Object(o) if o.numbers().is_some() => {
             J::Array(o.numbers().unwrap().iter().map(|x| serde_json::Number::from_f64(*x).map_or(J::Null, J::Number)).collect())

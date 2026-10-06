@@ -135,11 +135,54 @@ Labels can be numbers, strings or bools. Scores are a list/vec (binary) or rows 
 Metric numbers are checked against scikit-learn (`tests/ml_ref.rs`).
 See `examples/model_eval.mpp`.
 
+## Local LLM tests (`llm`)
+
+Connect to your own model:
+
+```
+model = llm.http("http://localhost:8080", temperature = 0)          # OpenAI-style server: llama.cpp, vLLM, Ollama, LM Studio...
+model = llm.http(url, api = "completions")                          # completions API (needed for perplexity)
+model = llm.http(url, mode = "raw", field = "output.text")          # your own JSON server: {"prompt": ...} in, text at `field` out
+model = llm.process("python infer.py")                              # a script: one JSON line in, one JSON line out ({"text": ...})
+model = llm.mock((prompt, params) => "...")                         # fake model for wiring tests
+```
+
+Model methods: `ask` (text), `generate` (text, tokens, latency, logprobs), `chat(messages)`,
+`stream` (time to first token), `batch(prompts, concurrency = 8)`, `logprobs`, `perplexity`.
+Any extra named argument (`max_tokens`, `temperature`, `seed`, `stop`, ...) goes to the model.
+Tokens come from `.env`: `headers = {"Authorization": "Bearer " + env("MODEL_TOKEN")}`.
+
+Evaluation:
+
+- `eval_set(model, cases, metric)`: golden set (list of `{"prompt", "expected"}` or a table);
+  metrics `exact contains regex json json_schema token_f1 bleu rouge_l chrf similarity refusal`
+  or your own `fn(output, expected)`
+- `compare_checkpoints(a, b, cases)`: paired bootstrap CI, sign test, verdict, list of regressions
+- `judge(model, answer, rubric)`: your own model grades an answer
+- `determinism`, `consistency` (paraphrases), `load_test` (p50/p95/p99, TTFT, tokens/s, errors)
+- text metrics: `exact_match`, `token_f1`, `bleu`, `rouge`, `rouge_l`, `rouge_n`, `chrf`,
+  `similarity`, `edit_distance`, `contains`, `regex_match`, `extract`, `json_valid`, `parse_json`,
+  `json_schema`, `refusal`, `pass_at_k`, `perplexity_of` (checked against nltk, rouge-score, sacrebleu)
+
+Training logs (JSONL or CSV, `NaN` and `Infinity` understood):
+
+```
+log = llm.train_log("runs/a.jsonl")
+r = log.check()          # NaN/inf, loss spikes, divergence, plateau, overfitting,
+                         # grad explode/vanish, LR schedule, throughput drops
+print(r.issues)          # table: severity, kind, step, message
+log.compare(other_log)   # which run is lower over the shared steps
+report "loss": log.plot(["loss", "val_loss"])   # chart, drawn in the HTML report
+```
+
+Examples: `examples/llm_eval_test.mpp` (runs anywhere), `examples/llm_local.mpp` (set `MODEL_URL`),
+`examples/train_debug.mpp`.
+
 ## Language in one screen
 
 ```
 # comments use '#'; '//' is integer division
-import math, json               # built-in modules: math time io json rand gen stats ab power bandit ml
+import math, json               # built-in modules: math time io json rand gen stats ab power bandit ml llm
 import "lib/helpers.mpp" as h   # your own files
 
 const ALPHA = 0.05              # cannot change

@@ -1,0 +1,48 @@
+# LLM eval wiring you can run anywhere: llm.mock stands in for a real model.
+# Swap llm.mock(...) for llm.http("http://localhost:8080") to test your own checkpoints.
+import llm
+
+fn answers(prompt, params) {
+    if "France" in prompt { return "The capital is Paris." }
+    if "2+2" in prompt { return "4" }
+    if "JSON" in prompt { return "```json\n{\"name\": \"Ada\", \"age\": 36}\n```" }
+    return "I'm sorry, I can't help with that."
+}
+
+old = llm.mock((p, params) => "I don't know", name = "ckpt-1000")
+new = llm.mock(answers, name = "ckpt-2000")
+
+golden = [
+    {"prompt": "capital of France?", "expected": "Paris"},
+    {"prompt": "what is 2+2?", "expected": "4"},
+]
+
+test "text metrics" {
+    expect llm.exact_match("The Paris!", "paris") == 1
+    expect llm.token_f1("the capital is paris", "paris") == 0.5
+    expect llm.bleu("the cat sat on the mat", ["the cat is on the mat"], smooth = true) > 0.2
+    expect llm.rouge("the cat sat", "the cat sat down").rougeL > 0.8
+    expect llm.chrf("colour", ["color"]) > 50
+    expect llm.pass_at_k(10, 3, 1) ~= 0.3
+}
+
+test "new checkpoint answers the golden set" {
+    r = llm.eval_set(new, golden, metric = "contains")
+    expect r.score == 1
+}
+
+experiment "new checkpoint beats old one" {
+    cmp = llm.compare_checkpoints(old, new, golden * 10, metric = "contains")
+    report "comparison": {"score_a": cmp.score_a, "score_b": cmp.score_b, "verdict": cmp.verdict, "sign_test_p": cmp.sign_test_p}
+    expect cmp.verdict == "better"
+}
+
+test "structured output follows the schema" {
+    out = new.ask("Return a person as JSON")
+    expect llm.json_schema(out, {"type": "object", "required": ["name", "age"], "properties": {"age": {"type": "integer", "minimum": 0}}}).valid
+}
+
+test "refuses only what it should" {
+    expect llm.refusal(new.ask("something odd"))
+    expect not llm.refusal(new.ask("capital of France?"))
+}

@@ -23,7 +23,7 @@ summary{padding:8px 14px;cursor:pointer;display:flex;gap:10px;align-items:baseli
 .body{padding:4px 14px 14px 38px}pre{background:var(--code);border-radius:6px;padding:10px;overflow-x:auto;margin:6px 0;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
 table{border-collapse:collapse;margin:6px 0;font-size:13px}td,th{padding:3px 12px 3px 0;text-align:left;vertical-align:top}th{color:var(--mute);font-weight:500}
 .lbl{color:var(--mute);font-size:12px;margin-top:8px}svg text{fill:var(--ink);font-size:11px}
-.hide{display:none}
+.hide{display:none}.chart{max-width:680px;color:var(--ink)}
 "#;
 
 const SCRIPT: &str = r#"
@@ -45,6 +45,10 @@ fn mark(s: Status) -> (&'static str, &'static str) {
 
 fn value_html(v: &J, text: &str) -> String {
     match v {
+        // charts are SVG we generated ourselves (labels escaped)
+        J::Object(m) if m.get("svg").and_then(|s| s.as_str()).is_some_and(|s| s.starts_with("<svg")) => {
+            format!("<div class=chart>{}</div>", m["svg"].as_str().unwrap())
+        }
         J::Object(m) if !m.is_empty() => {
             let mut o = String::from("<table>");
             for (k, x) in m {
