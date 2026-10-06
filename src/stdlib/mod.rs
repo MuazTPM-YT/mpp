@@ -1,5 +1,6 @@
 pub mod core;
 pub mod fmt;
+pub mod generators;
 pub mod io;
 pub mod json;
 pub mod list;
@@ -7,6 +8,7 @@ pub mod map;
 pub mod math;
 pub mod rand;
 pub mod str;
+pub mod testing;
 pub mod time;
 
 use crate::vm::{Args, Flow, Native, R, Value, Vm, err};
@@ -19,7 +21,7 @@ pub fn builtin_index(name: &str) -> Option<u16> {
     BUILTINS.iter().position(|n| n.name == name).map(|i| i as u16)
 }
 
-pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand"];
+pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand", "gen"];
 
 pub fn is_module(name: &str) -> bool {
     MODULES.contains(&name)
@@ -33,6 +35,7 @@ pub fn module(name: &str) -> Option<IndexMap<Rc<str>, Value>> {
         "io" => (io::FNS, vec![]),
         "json" => (json::FNS, vec![]),
         "rand" => (rand::FNS, vec![]),
+        "gen" => (generators::FNS, vec![]),
         _ => return None,
     };
     let mut m: IndexMap<Rc<str>, Value> = fns.iter().map(|n| (Rc::from(n.name), Value::Native(n))).collect();
@@ -46,6 +49,7 @@ pub fn has_method(recv: &Value, name: &str) -> bool {
         Value::List(_) => list::METHODS,
         Value::Map(_) => map::METHODS,
         Value::Range(..) => &["len", "list"],
+        Value::Object(o) => o.methods(),
         _ => &[],
     };
     names.contains(&name)
@@ -56,6 +60,7 @@ pub fn call_method(vm: &mut Vm, recv: &Value, name: &str, a: Args) -> R {
         Value::Str(s) => str::call(vm, s, name, a),
         Value::List(l) => list::call(vm, l, name, a),
         Value::Map(m) => map::call(vm, m, name, a),
+        Value::Object(o) => o.clone().call_method(vm, recv, name, a),
         Value::Range(lo, hi) => {
             a.bind([])?;
             match name {

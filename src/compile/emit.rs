@@ -584,6 +584,94 @@ impl Compiler<'_> {
                 self.emit(Op::Throw);
             }
             StmtKind::Global(_) | StmtKind::Nonlocal(_) => {}
+            StmtKind::TestBlock { kind, name, gens, opts, body } => self.test_block(*kind, name, gens, opts, body, s.span),
+            StmtKind::Expect(e, within) => self.expect(e, within.as_ref()),
+            StmtKind::Report(label, value) => {
+                match label {
+                    Some(l) => self.expr(l),
+                    None => {
+                        let k = self.src_const(value.span);
+                        self.emit(Op::Const(k));
+                    }
+                }
+                self.expr(value);
+                self.emit(Op::Report);
+            }
+        }
+    }
+
+    // source text of a span, as a string constant
+    fn src_const(&mut self, span: Span) -> u32 {
+        let text = self.src.get(span.start as usize..span.end as usize).unwrap_or("?").to_string();
+        self.konst(Const::Str(text.into()))
+    }
+
+    fn test_block(&mut self, kind: TestKind, name: &Rc<str>, gens: &[(Name, Expr)], opts: &[(Name, Expr)], body: &[Stmt], span: Span) {
+        if self.fns.len() > 1 {
+            self.err(format!("`{}` blocks must be at the top level of a file", kind.word()), span);
+            return;
+        }
+        if kind == TestKind::Property && gens.is_empty() {
+            self.err("property needs inputs, like `property \"name\" (x in gen.int(0, 9)) { ... }`", span);
+        }
+        if kind != TestKind::Property && !gens.is_empty() {
+            self.err(format!("only `property` takes `x in generator` inputs, not `{}`", kind.word()), span);
+        }
+        let params = gens.iter().map(|(n, e)| Param { name: n.clone(), default: None, span: e.span }).collect();
+        let decl = FnDecl { name: name.clone(), params, body: body.to_vec(), span };
+        self.function(&decl, Kind::Function);
+        for (k, e) in opts {
+            let kk = self.name_const(k);
+            self.emit(Op::Const(kk));
+            self.expr(e);
+        }
+        self.emit(Op::MakeMap(opts.len() as u32));
+        for (_, g) in gens {
+            self.expr(g);
+        }
+        self.emit(Op::MakeList(gens.len() as u32));
+        let nk = self.konst(Const::Str(name.clone()));
+        self.span = span;
+        self.emit(Op::RegisterTest(kind as u8, nk));
+    }
+
+    fn expect(&mut self, e: &Expr, within: Option<&Expr>) {
+        let src = self.src_const(e.span);
+        let cmp = match &e.kind {
+            ExprKind::Binary(op, l, r) => {
+                let c = match op {
+                    BinOp::Eq => Some(Cmp::Eq),
+                    BinOp::Ne => Some(Cmp::Ne),
+                    BinOp::Lt => Some(Cmp::Lt),
+                    BinOp::Le => Some(Cmp::Le),
+                    BinOp::Gt => Some(Cmp::Gt),
+                    BinOp::Ge => Some(Cmp::Ge),
+                    BinOp::In => Some(Cmp::In),
+                    BinOp::NotIn => Some(Cmp::NotIn),
+                    BinOp::Approx => Some(Cmp::Approx),
+                    _ => None,
+                };
+                c.map(|c| (c, l, r))
+            }
+            _ => None,
+        };
+        match (cmp, within) {
+            (Some((Cmp::Approx, l, r)), Some(tol)) => {
+                self.expr(l);
+                self.expr(r);
+                self.expr(tol);
+                self.emit(Op::ExpectApprox(src));
+            }
+            (_, Some(tol)) => self.err("`within` only works with `~=`, like `expect a ~= b within 0.01`", tol.span),
+            (Some((c, l, r)), None) => {
+                self.expr(l);
+                self.expr(r);
+                self.emit(Op::ExpectCmp(c, src));
+            }
+            (None, None) => {
+                self.expr(e);
+                self.emit(Op::Expect(src));
+            }
         }
     }
 

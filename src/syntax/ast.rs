@@ -119,4 +119,39 @@ pub enum StmtKind {
     Throw(Expr),
     Global(Vec<Name>),
     Nonlocal(Vec<Name>),
+    // test / experiment / bench / property block, top level only
+    TestBlock { kind: TestKind, name: Rc<str>, gens: Vec<(Name, Expr)>, opts: Vec<(Name, Expr)>, body: Vec<Stmt> },
+    // expect cond [within tol]
+    Expect(Expr, Option<Expr>),
+    // report [label:] value
+    Report(Option<Expr>, Expr),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TestKind {
+    Test,
+    Experiment,
+    Bench,
+    Property,
+}
+
+impl TestKind {
+    pub fn from_word(w: &str) -> Option<TestKind> {
+        Some(match w {
+            "test" => TestKind::Test,
+            "experiment" => TestKind::Experiment,
+            "bench" => TestKind::Bench,
+            "property" => TestKind::Property,
+            _ => return None,
+        })
+    }
+
+    pub fn word(self) -> &'static str {
+        match self {
+            TestKind::Test => "test",
+            TestKind::Experiment => "experiment",
+            TestKind::Bench => "bench",
+            TestKind::Property => "property",
+        }
+    }
 }

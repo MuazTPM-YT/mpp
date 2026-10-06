@@ -233,11 +233,75 @@ impl Parser {
                 }
                 if global { StmtKind::Global(names) } else { StmtKind::Nonlocal(names) }
             }
+            Tok::Ident(w) if TestKind::from_word(w).is_some() && matches!(self.peek_at(1), Tok::Str(_)) => self.test_block()?,
+            Tok::Ident(w) if (&**w == "expect" || &**w == "report") && self.word_is_keyword() => {
+                let is_expect = &**w == "expect";
+                self.bump();
+                let first = self.expr()?;
+                if is_expect {
+                    let within = match self.peek() {
+                        Tok::Ident(n) if &**n == "within" => {
+                            self.bump();
+                            Some(self.expr()?)
+                        }
+                        _ => None,
+                    };
+                    StmtKind::Expect(first, within)
+                } else if self.eat(&Tok::Colon) {
+                    StmtKind::Report(Some(first), self.expr()?)
+                } else {
+                    StmtKind::Report(None, first)
+                }
+            }
             _ => self.simple()?,
         };
         let span = start.to(self.prev_span());
         self.end_stmt()?;
         Ok(Stmt { kind, span })
+    }
+
+    // `expect`/`report` used as a statement word, not a variable
+    fn word_is_keyword(&self) -> bool {
+        !matches!(
+            self.peek_at(1),
+            Tok::Assign
+                | Tok::PlusEq
+                | Tok::MinusEq
+                | Tok::StarEq
+                | Tok::SlashEq
+                | Tok::PercentEq
+                | Tok::Comma
+                | Tok::Dot
+                | Tok::Newline
+                | Tok::Semi
+                | Tok::Eof
+                | Tok::RBrace
+        )
+    }
+
+    // test "name" (x in gen, opt = v) { ... }
+    fn test_block(&mut self) -> PResult<StmtKind> {
+        let Tok::Ident(w) = self.bump().tok else { unreachable!() };
+        let kind = TestKind::from_word(&w).unwrap();
+        let Tok::Str(name) = self.bump().tok else { unreachable!() };
+        let (mut gens, mut opts) = (Vec::new(), Vec::new());
+        if self.eat(&Tok::LParen) {
+            while !self.at(&Tok::RParen) {
+                let (n, span) = self.ident("`name in generator` or `option = value`")?;
+                if self.eat(&Tok::In) {
+                    gens.push((n, self.expr()?));
+                } else if self.eat(&Tok::Assign) {
+                    opts.push((n, self.expr()?));
+                } else {
+                    return Err(Diag::new(format!("write `{n} in generator` or `{n} = value`"), span));
+                }
+                if !self.eat(&Tok::Comma) {
+                    break;
+                }
+            }
+            self.expect(Tok::RParen, "`)`")?;
+        }
+        Ok(StmtKind::TestBlock { kind, name, gens, opts, body: self.block()? })
     }
 
     // expression, assignment, or unpack

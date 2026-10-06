@@ -1,0 +1,7 @@
+# `mpp run` registers test blocks but does not run them; report prints
+test "never runs here" { print("BAD") }
+report "label": 42
+x = 3
+report x * 2
+expect x == 3
+try { expect x > 5 } catch e { print(e.kind, "|", e.message) }

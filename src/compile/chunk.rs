@@ -75,6 +75,44 @@ pub enum Op {
     Import(u32),
     ImportBuiltin(u32),
     ReplPrint,
+    // test kind, name const; stack: fn, opts map, gens list
+    RegisterTest(u8, u32),
+    // const = source text of the expectation
+    Expect(u32),
+    ExpectCmp(Cmp, u32),
+    ExpectApprox(u32),
+    // stack: label, value
+    Report,
+}
+
+// comparison inside `expect a OP b`
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum Cmp {
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
+    In,
+    NotIn,
+    Approx,
+}
+
+impl Cmp {
+    pub fn op(self) -> Op {
+        match self {
+            Cmp::Eq => Op::Eq,
+            Cmp::Ne => Op::Ne,
+            Cmp::Lt => Op::Lt,
+            Cmp::Le => Op::Le,
+            Cmp::Gt => Op::Gt,
+            Cmp::Ge => Op::Ge,
+            Cmp::In => Op::In,
+            Cmp::NotIn => Op::NotIn,
+            Cmp::Approx => Op::Approx,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

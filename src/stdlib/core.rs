@@ -45,6 +45,10 @@ pub static BUILTINS: &[Native] = natives![
     "copy" => copy,
     "isinstance" => isinstance,
     "callable" => callable,
+    "skip" => super::testing::skip,
+    "expect_throws" => super::testing::expect_throws,
+    "expect_snapshot" => super::testing::expect_snapshot,
+    "note" => super::testing::note,
 ];
 
 fn print(vm: &mut Vm, a: Args) -> R {

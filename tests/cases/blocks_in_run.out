@@ -1,0 +1,5 @@
+label: 42
+x * 2: 6
+ExpectFailed | expected `x > 5`
+  left:  3
+  right: 5

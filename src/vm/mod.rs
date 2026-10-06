@@ -46,6 +46,32 @@ pub struct Vm {
     pub argv: Vec<String>,
     native_depth: usize,
     repl_globals: Option<Rc<Globals>>,
+    // test blocks seen while running module code
+    pub tests: Vec<TestDef>,
+    // set while a test runs
+    pub test_ctx: Option<TestCtx>,
+    // stop with TimeoutError after this moment
+    pub deadline: Option<std::time::Instant>,
+}
+
+pub struct TestDef {
+    pub kind: u8,
+    pub name: Rc<str>,
+    pub func: Value,
+    pub opts: Value,
+    pub gens: Vec<Value>,
+    pub file: Rc<str>,
+    pub line: u32,
+}
+
+#[derive(Default)]
+pub struct TestCtx {
+    pub name: String,
+    pub reports: Vec<(String, Value)>,
+    pub snap_index: usize,
+    pub snapshots: Option<Rc<RefCell<crate::runner::Snapshots>>>,
+    pub update_snapshots: bool,
+    pub notes: Vec<String>,
 }
 
 impl Vm {
@@ -62,6 +88,9 @@ impl Vm {
             argv: Vec::new(),
             native_depth: 0,
             repl_globals: None,
+            tests: Vec::new(),
+            test_ctx: None,
+            deadline: None,
         }
     }
 
@@ -389,7 +418,16 @@ impl Vm {
                     let v = pop!();
                     self.stack.push(Value::Bool(!v.truthy()));
                 }
-                Op::Jump(t) => ip = t as usize,
+                Op::Jump(t) => {
+                    // loop back-edge: check time limit
+                    if (t as usize) < ip
+                        && let Some(d) = self.deadline
+                        && std::time::Instant::now() > d
+                    {
+                        bail!(timeout());
+                    }
+                    ip = t as usize
+                }
                 Op::JumpIfFalse(t) => {
                     if !pop!().truthy() {
                         ip = t as usize;
@@ -591,6 +629,60 @@ impl Vm {
                         let _ = writeln!(self.out, "{s}");
                     }
                 }
+                Op::RegisterTest(kind, k) => {
+                    let gens = match pop!() {
+                        Value::List(l) => l.borrow().clone(),
+                        _ => unreachable!(),
+                    };
+                    let opts = pop!();
+                    let func = pop!();
+                    let line = closure.proto.lines.get(ip - 1).map_or(0, |l| l.0);
+                    self.tests.push(TestDef { kind, name: name!(k), func, opts, gens, file: closure.proto.file.clone(), line });
+                }
+                Op::Expect(k) => {
+                    let v = pop!();
+                    if !v.truthy() {
+                        self.frames[fi].ip = ip;
+                        let shown = tri!(self.display(&v, true));
+                        bail!(err("ExpectFailed", format!("expected `{}`\n  got: {shown}", name!(k))));
+                    }
+                }
+                Op::ExpectCmp(c, k) => {
+                    let r = pop!();
+                    let l = pop!();
+                    if !tri!(ops::binary(c.op(), &l, &r)).truthy() {
+                        self.frames[fi].ip = ip;
+                        let (ls, rs) = (tri!(self.display(&l, true)), tri!(self.display(&r, true)));
+                        bail!(err("ExpectFailed", format!("expected `{}`\n  left:  {ls}\n  right: {rs}", name!(k))));
+                    }
+                }
+                Op::ExpectApprox(k) => {
+                    let tol = pop!();
+                    let r = pop!();
+                    let l = pop!();
+                    let t = tri!(tol.num("within"));
+                    if !tri!(approx(&l, &r, 0.0, t)) {
+                        self.frames[fi].ip = ip;
+                        let (ls, rs) = (tri!(self.display(&l, true)), tri!(self.display(&r, true)));
+                        bail!(err(
+                            "ExpectFailed",
+                            format!("expected `{}` within {}\n  left:  {ls}\n  right: {rs}", name!(k), fmt_float(t))
+                        ));
+                    }
+                }
+                Op::Report => {
+                    let v = pop!();
+                    let label = pop!();
+                    self.frames[fi].ip = ip;
+                    let label = tri!(self.display(&label, false));
+                    match &mut self.test_ctx {
+                        Some(ctx) => ctx.reports.push((label, v)),
+                        None => {
+                            let shown = tri!(self.display(&v, false));
+                            let _ = writeln!(self.out, "{label}: {shown}");
+                        }
+                    }
+                }
             }
         }
     }
@@ -691,6 +783,9 @@ impl Vm {
         if self.frames.len() >= MAX_FRAMES {
             return Err(err("RecursionError", "too deep recursion (over 20000 calls)"));
         }
+        if self.deadline.is_some_and(|d| std::time::Instant::now() > d) {
+            return Err(timeout());
+        }
         self.frames.push(Frame { closure: c, ip: 0, base, ret_to, init_self });
         Ok(())
     }
@@ -770,6 +865,11 @@ impl Vm {
                 "kind" => Ok(Value::Str(e.kind.clone())),
                 "trace" => Ok(Value::str(format_trace(&e.trace.borrow()))),
                 _ => Err(no_attr(obj, name)),
+            },
+            Value::Object(o) => match o.get(name) {
+                Some(v) => Ok(v),
+                None if o.methods().contains(&&**name) => Ok(Value::BoundNative(Rc::new((obj.clone(), name.clone())))),
+                None => Err(no_attr(obj, name)),
             },
             _ if stdlib::has_method(obj, name) => Ok(Value::BoundNative(Rc::new((obj.clone(), name.clone())))),
             _ => Err(no_attr(obj, name)),
@@ -877,9 +977,14 @@ impl Vm {
                 self.write_value(out, &inner, repr, depth)?;
             }
             Value::Iter(_) => out.push_str("<iterator>"),
+            Value::Object(o) => out.push_str(&o.display()),
         }
         Ok(())
     }
+}
+
+fn timeout() -> Flow {
+    err("TimeoutError", "time limit reached")
 }
 
 fn unassigned(name: &str) -> Flow {

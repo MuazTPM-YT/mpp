@@ -110,6 +110,26 @@ pub enum Value {
     // captured local, boxed; internal
     Cell(Rc<RefCell<Value>>),
     Iter(Rc<RefCell<IterState>>),
+    // native object: generators, vectors, tables, model clients
+    Object(Rc<dyn Object>),
+}
+
+pub trait Object {
+    fn type_name(&self) -> &'static str;
+    fn as_any(&self) -> &dyn std::any::Any;
+    fn display(&self) -> String {
+        format!("<{}>", self.type_name())
+    }
+    // read-only fields
+    fn get(&self, _name: &str) -> Option<Value> {
+        None
+    }
+    fn methods(&self) -> &'static [&'static str] {
+        &[]
+    }
+    fn call_method(&self, _vm: &mut Vm, _this: &Value, name: &str, _a: Args) -> R {
+        Err(err("AttributeError", format!("{} has no method `{name}`", self.type_name())))
+    }
 }
 
 impl fmt::Debug for Value {
@@ -165,6 +185,14 @@ pub fn py_exp(s: String, upper: bool) -> String {
 }
 
 impl Value {
+    // downcast a native object
+    pub fn object<T: 'static>(&self) -> Option<&T> {
+        match self {
+            Value::Object(o) => o.as_any().downcast_ref::<T>(),
+            _ => None,
+        }
+    }
+
     pub fn str(s: impl AsRef<str>) -> Value {
         Value::Str(s.as_ref().into())
     }
@@ -200,6 +228,7 @@ impl Value {
             Value::Error(_) => "error",
             Value::Cell(_) => "cell",
             Value::Iter(_) => "iterator",
+            Value::Object(o) => o.type_name(),
         }
     }
 
@@ -314,6 +343,7 @@ pub fn equal(a: &Value, b: &Value) -> bool {
         (Value::Instance(x), Value::Instance(y)) => Rc::ptr_eq(x, y),
         (Value::Module(x), Value::Module(y)) => Rc::ptr_eq(x, y),
         (Value::Error(x), Value::Error(y)) => Rc::ptr_eq(x, y),
+        (Value::Object(x), Value::Object(y)) => Rc::ptr_eq(x, y),
         _ => false,
     }
 }

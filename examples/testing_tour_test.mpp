@@ -1,0 +1,52 @@
+# tour of Muaz++ test blocks: run with `mpp test examples/`
+import gen
+
+fn lift(a, b) { return (b - a) / a }
+
+fn mean(xs) { return sum(xs) / len(xs) }
+
+test "lift math" {
+    expect lift(0.10, 0.12) ~= 0.2
+    expect lift(0.10, 0.10) == 0
+    expect lift(1, 2) ~= 1.0 within 0.0001
+}
+
+test "errors are checked" {
+    e = expect_throws(() => lift(0, 1), kind = "ZeroDivisionError")
+    expect "zero" in e.message
+}
+
+experiment "checkout button" {
+    control = [0, 1, 0, 0, 1, 0, 0, 0, 1, 0]
+    treatment = [1, 1, 0, 1, 1, 0, 1, 0, 1, 0]
+    a = mean(control)
+    b = mean(treatment)
+    report "conversion": {"control": a, "treatment": b}
+    report lift(a, b)
+    expect b > a
+}
+
+property "sorting keeps length and order" (xs in gen.list(gen.int(-100, 100), max = 30)) {
+    s = sorted(xs)
+    expect len(s) == len(xs)
+    for i in 1..len(s) { expect s[i - 1] <= s[i] }
+}
+
+property "mean sits between min and max" (xs in gen.list(gen.float(-1000, 1000), min = 1)) {
+    m = mean(xs)
+    expect m >= min(xs) - 1e-9 and m <= max(xs) + 1e-9
+}
+
+test "snapshot of a summary" {
+    expect_snapshot({"n": 3, "labels": ["a", "b", "c"]})
+}
+
+test "not ready yet" {
+    skip("waiting for real data")
+}
+
+bench "sum 10k floats" (time = 0.2) {
+    xs = []
+    for i in 0..10000 { xs.append(i * 0.5) }
+    sum(xs)
+}

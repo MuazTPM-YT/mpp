@@ -1,0 +1,19 @@
+import gen
+fn buggy_abs(x) { return x < -5 ? -x : x }
+print("module code runs once")
+test "passes" { expect 1 + 1 == 2 }
+test "fails" {
+    print("captured")
+    expect [1, 2] == [1, 3]
+}
+test "errors" { x = {}["missing"] }
+test "skips" { skip("later") }
+experiment "reports" {
+    report "rate": 0.25
+    report {"a": 1}
+}
+property "finds smallest" (x in gen.int(-1000, 1000)) { expect buggy_abs(x) >= 0 }
+property "list shrinks" (xs in gen.list(gen.int(0, 100))) { expect sum(xs) < 50 }
+test "times out" (timeout = 0.05) { while true { } }
+test "snap" { expect_snapshot([1, 2, 3]) }
+bench "tiny" (n = 20) { x = 1 + 1 }
