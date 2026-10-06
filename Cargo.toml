@@ -5,6 +5,7 @@ edition = "2024"
 rust-version = "1.93"
 description = "Muaz++: a language and compiler for A/B tests, stats, model tests and local LLM tests"
 license = "MIT"
+authors = ["Muaz Ismail Mohammed"]
 
 [[bin]]
 name = "mpp"

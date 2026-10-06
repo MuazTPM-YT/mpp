@@ -257,3 +257,7 @@ cargo test                      # unit, golden and crash tests
 MPP_BLESS=1 cargo test --test golden   # rewrite expected outputs (review the diff!)
 cargo clippy --all-targets -- -D warnings
 ```
+
+## License
+
+MIT, see [LICENSE](LICENSE).
