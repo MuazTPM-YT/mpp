@@ -1,0 +1,58 @@
+fn greet(name, greeting = "hi", punct = "!") { return f"{greeting} {name}{punct}" }
+print(greet("ann"), greet("bob", "yo"), greet("cy", punct = "?"), greet(greeting = "hey", name = "di"))
+
+fn make_counter(start = 0) {
+    count = start
+    fn step(by = 1) {
+        nonlocal count
+        count += by
+        return count
+    }
+    return step
+}
+c = make_counter(10)
+c()
+c(5)
+print("counter", c())
+
+total = 0
+fn add_total(x) {
+    global total
+    total += x
+}
+add_total(3)
+add_total(4)
+print("total", total)
+
+fn shadow() {
+    total = 100
+    return total
+}
+print(shadow(), total)
+
+fn fact(n) { return n <= 1 ? 1 : n * fact(n - 1) }
+print(fact(20))
+
+square = x => x * x
+add = (a, b) => a + b
+print(square(7), add(2, 3), [1, 2, 3].map(x => x * 10), [3, 1, 2].sorted(key = x => -x))
+compose = (f, g) => x => f(g(x))
+print(compose(square, x => x + 1)(3))
+anon = fn(a, b = 2) {
+    s = a + b
+    return s * 2
+}
+print(anon(1), anon(1, 5))
+adders = []
+for i in 0..3 { adders.append(x => x + i) }
+print(adders.map(f => f(10)))
+fn defaults_each_call(xs = []) {
+    xs.append(1)
+    return len(xs)
+}
+print(defaults_each_call(), defaults_each_call())
+fn early(x) {
+    if x > 0 { return "pos" }
+    return
+}
+print(early(1), early(-1))

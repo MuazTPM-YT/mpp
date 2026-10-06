@@ -1,0 +1,22 @@
+--- error ---
+error: `cuont` is not defined
+  ┌─ tests/cases/compile_error.mpp:2:7
+  │
+2 │ print(cuont)
+  │       ^^^^^
+  │
+  = did you mean `count`?
+
+error: `LIMIT` is a const and cannot change
+  ┌─ tests/cases/compile_error.mpp:4:1
+  │
+4 │ LIMIT = 4
+  │ ^^^^^
+
+error: `break`/`continue` outside a loop
+  ┌─ tests/cases/compile_error.mpp:5:1
+  │
+5 │ break
+  │ ^^^^^
+
+

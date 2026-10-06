@@ -1,0 +1,7 @@
+Point(x=3, y=4) 25 Point(x=4, y=5)
+9 true
+rex says woof (lab) <Dog rex> <Dog rex> <Dog rex>
+true true false true
+woof Dog Dog
+Empty() true false
+[1, 2]

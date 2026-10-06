@@ -1,0 +1,13 @@
+import rand
+rand.seed(42)
+a = [rand.int(1, 6), rand.int(1, 6), rand.int(1, 6)]
+rand.seed(42)
+b = [rand.int(1, 6), rand.int(1, 6), rand.int(1, 6)]
+print(a == b, a)
+xs = [1, 2, 3, 4, 5]
+rand.shuffle(xs)
+print(sorted(xs), len(rand.sample(xs, 3)), rand.choice(["only"]))
+vals = []
+for i in 0..10000 { vals.append(rand.normal(10, 2)) }
+mean = sum(vals) / len(vals)
+print(abs(mean - 10) < 0.1)

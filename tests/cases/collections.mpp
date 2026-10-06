@@ -1,0 +1,34 @@
+xs = [5, 3, 8, 1]
+xs.append(7)
+xs.insert(0, 9)
+print(xs, xs.pop(), xs.pop(0), xs)
+xs.sort()
+print(xs, xs.sorted(reverse = true), xs.index(5), xs.count(3), 8 in xs)
+print(xs[0], xs[-1], xs[1:3], xs[:2], xs[2:], xs[-2:])
+xs[0] = 100
+print(xs, xs.reversed(), xs.copy() == xs)
+print([1, 2, 3].reduce((a, b) => a + b), [1, 2, 3].reduce((a, b) => a * b, 10))
+print([1, [2, 3], [4]].flatten(), [1, 1, 2, 3, 3].unique(), [1, 2, 3, 4, 5].chunk(2))
+print([1, 2, 3].zip(["a", "b"]), enumerate(["x", "y"]), zip([1, 2], [3, 4], [5, 6]))
+print([1, 2, 3, 4].take(2), [1, 2, 3, 4].skip(3), [].is_empty(), [3, 4].first(), [3, 4].last())
+words = ["apple", "avocado", "banana", "cherry", "blueberry"]
+print(words.group_by(w => w[0]))
+print(words.count_by(w => len(w) > 5))
+print(words.find(w => w.startswith("b")), words.any(w => w == "kiwi"), words.all(w => len(w) > 3))
+print(words.sorted(key = w => len(w)))
+m = {"b": 2, "a": 1}
+m["c"] = 3
+m.d = 4
+print(m, m.keys(), m.values(), m.get("zz", 0), m.has("a"), "b" in m, len(m))
+print(m.pop("b"), m)
+m.update({"a": 10, "e": 5})
+print(m, m.items()[0])
+nested = {"users": [{"name": "ann", "tags": ["x"]}], 1: "int key", true: "bool key"}
+print(nested["users"][0]["tags"][0], nested[1], nested[true], nested.users[0].name)
+a, b, c = [1, 2, 3]
+print(a, b, c)
+pairs = [["x", 1], ["y", 2]]
+for k, v in pairs { print(k, v) }
+print("a-b-c".split("-"), "  a  b ".split(), "x=1=2".split("=", max = 1), "  pad ".strip(), "AbC".lower())
+print("hello world".title(), "abc".find("c"), "abc".replace("b", "B"), "ab".rjust(5, "."), "ab".center(6, "*"))
+print("line1\nline2".lines(), "abc".chars(), "123".isdigit(), "-".join([1, 2, 3]))

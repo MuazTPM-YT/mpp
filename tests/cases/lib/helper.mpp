@@ -1,0 +1,9 @@
+import math
+const VERSION = "1.0"
+calls = 0
+fn hyp(a, b) {
+    global calls
+    calls += 1
+    return math.sqrt(a * a + b * b)
+}
+print("helper loaded")

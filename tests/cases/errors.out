@@ -1,0 +1,21 @@
+Error | plain message
+IndexError | index 5 out of range (length 2)
+KeyError | key "b" not in map
+TypeError | cannot do int + str; use str(x) or an f-string
+ValueError | int(): not an int: "x1"
+ValueError | bad input
+AssertionError | math broke
+AttributeError | nil has no method `foo`
+TypeError | len(): int has no length
+TypeError | f() missing argument `b`
+TypeError | f() takes 2 argument(s) but got 3
+TypeError | f() has no parameter `c`
+NameError | `later` is used before it gets a value
+5
+ZeroDivisionError | division by zero
+outer from inner
+caught silently
+ZeroDivisionError 52
+RecursionError
+OverflowError
+still running

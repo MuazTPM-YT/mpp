@@ -1,0 +1,14 @@
+7 9 3.5 3 -4 1 2 1024 0.5
+true false true true true true
+1e+20 1.5e-07 100.0 0.1 -0.0 0.3333333333333333
+concat ababab 5 é bcd ef
+true true true true default 0 yes
+   mpp|3.14|   3.142|25.6%|1,234,567|ff|00042|3.141590e+00
+nested 1 {literal} q MPP
+multi
+line
+raw\n tab	end 😀
+43 3 -7 2.5 12! 2 4 3.14
+int float str list map nil function range
+1 9 3 2.5 6 1.0
+1000000 255 5 15

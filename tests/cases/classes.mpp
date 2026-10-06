@@ -1,0 +1,43 @@
+class Point {
+    fn init(self, x, y) {
+        self.x = x
+        self.y = y
+    }
+    fn norm2(self) { return self.x ** 2 + self.y ** 2 }
+    fn plus(self, o) { return Point(self.x + o.x, self.y + o.y) }
+}
+p = Point(3, 4)
+print(p, p.norm2(), p.plus(Point(1, 1)))
+p.z = 9
+print(p.z, "z" in p)
+
+class Animal {
+    fn init(self, name) { self.name = name }
+    fn speak(self) { return "..." }
+    fn intro(self) { return f"{self.name} says {self.speak()}" }
+}
+class Dog : Animal {
+    fn init(self, name, breed) {
+        super.init(name)
+        self.breed = breed
+    }
+    fn speak(self) { return "woof" }
+    fn intro(self) { return super.intro() + f" ({self.breed})" }
+    fn to_str(self) { return f"<Dog {self.name}>" }
+}
+d = Dog("rex", "lab")
+print(d.intro(), d, str(d), f"{d}")
+print(isinstance(d, Dog), isinstance(d, Animal), isinstance(p, Animal), isinstance(3, "int"))
+m = d.speak
+print(m(), Dog.name, type(d))
+class Empty {}
+e = Empty()
+print(e, callable(Empty), callable(e))
+class Lazy {
+    fn init(self) { self.calls = [] }
+    fn log(self, x) {
+        self.calls.append(x)
+        return self
+    }
+}
+print(Lazy().log(1).log(2).calls)

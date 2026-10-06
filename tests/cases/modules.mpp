@@ -1,0 +1,10 @@
+import "lib/helper.mpp"
+import "lib/helper.mpp" as h2
+import math as m, json, time
+print(helper.hyp(3, 4), helper.VERSION, helper.calls, h2 == helper)
+print(m.floor(2.7), m.ceil(2.1), m.pi ~= 3.14159265, m.isnan(m.nan), m.log(8, 2), m.erf(0.0))
+data = json.parse("{\"a\": [1, 2.5, true, null], \"b\": \"x\"}")
+print(data, data.a[1], json.dump(data))
+print(json.dump({"k": [1, 2]}, indent = 2))
+print(time.iso(0))
+try { helper.missing } catch e { print(e.message) }

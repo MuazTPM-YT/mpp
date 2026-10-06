@@ -1,0 +1,4 @@
+fn ratio(a, b) { return a / b }
+print("before")
+x = ratio(1, 0)
+print("never")

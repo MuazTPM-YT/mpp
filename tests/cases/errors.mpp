@@ -1,0 +1,36 @@
+try {
+    throw "plain message"
+} catch e {
+    print(e.kind, "|", e.message)
+}
+try { [1, 2][5] } catch e { print(e.kind, "|", e.message) }
+try { {"a": 1}["b"] } catch e { print(e.kind, "|", e.message) }
+try { 1 + "a" } catch e { print(e.kind, "|", e.message) }
+try { int("x1") } catch e { print(e.kind, "|", e.message) }
+try { throw error("bad input", kind = "ValueError") } catch e { print(e.kind, "|", e.message) }
+try { assert(1 > 2, "math broke") } catch e { print(e.kind, "|", e.message) }
+try { nil.foo() } catch e { print(e.kind, "|", e.message) }
+try { len(5) } catch e { print(e.kind, "|", e.message) }
+fn f(a, b) { return a }
+try { f(1) } catch e { print(e.kind, "|", e.message) }
+try { f(1, 2, 3) } catch e { print(e.kind, "|", e.message) }
+try { f(1, c = 2) } catch e { print(e.kind, "|", e.message) }
+fn uses_later() { return later }
+try { uses_later() } catch e { print(e.kind, "|", e.message) }
+later = 5
+print(uses_later())
+# error inside a callback crosses native code
+try { [1, 2, 0].map(x => 10 / x) } catch e { print(e.kind, "|", e.message) }
+# nested try and rethrow
+fn risky() {
+    try { throw "inner" } catch e { throw "outer from " + e.message }
+}
+try { risky() } catch e { print(e.message) }
+# catch without a name
+try { throw "x" } catch { print("caught silently") }
+fn deep(n) { return n == 0 ? 1 / 0 : deep(n - 1) }
+try { deep(50) } catch e { print(e.kind, len(e.trace.lines())) }
+fn inf(n) { return inf(n + 1) }
+try { inf(0) } catch e { print(e.kind) }
+try { 9223372036854775807 + 1 } catch e { print(e.kind) }
+print("still running")

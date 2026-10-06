@@ -1,0 +1,20 @@
+range 0
+range 1
+range 2
+incl 1
+incl 2
+incl 3
+char a
+char b
+key x
+key y
+while 1
+while 3
+B
+pass
+found 3
+try 0
+try 1
+handler still ok: after loop
+[0, 3, 6, 9] [5, 3, 1] [0, 1, 2, 3] true false true
+high

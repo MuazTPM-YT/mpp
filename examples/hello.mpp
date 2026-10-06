@@ -1,0 +1,23 @@
+# Muaz++ tour: python feel, C++ braces
+import math
+
+fn lift(control, treatment) {
+    return (treatment - control) / control
+}
+
+class Variant {
+    fn init(self, name, rate) {
+        self.name = name
+        self.rate = rate
+    }
+    fn to_str(self) { return f"{self.name} ({self.rate:.1%})" }
+}
+
+a = Variant("control", 0.100)
+b = Variant("new button", 0.112)
+print(f"{b} vs {a}: lift {lift(a.rate, b.rate):+.1%}")
+
+rates = [0.10, 0.11, 0.09, 0.12]
+mean = sum(rates) / len(rates)
+sd = math.sqrt(rates.map(r => (r - mean) ** 2).sum() / (len(rates) - 1))
+print(f"mean {mean:.3f}, sd {sd:.4f}")
