@@ -1,0 +1,7 @@
+id,name,team,score,hours,active
+1,ann,red,88.5,10,true
+2,bob,blue,72,,false
+3,cy,red,95.25,12,true
+4,di,blue,NA,8,true
+5,ed,green,60,5,false
+6,fay,red,81,9,true

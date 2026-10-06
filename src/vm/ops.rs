@@ -46,6 +46,16 @@ fn fmod(a: f64, b: f64) -> f64 {
 
 pub fn binary(op: Op, a: &Value, b: &Value) -> R {
     use Value::*;
+    if let Object(o) = a
+        && let Some(r) = o.binary(op, b, false)
+    {
+        return r;
+    }
+    if let Object(o) = b
+        && let Some(r) = o.binary(op, a, true)
+    {
+        return r;
+    }
     match op {
         Op::Add => match (a, b) {
             (Int(x), Int(y)) => x.checked_add(*y).map(Int).ok_or_else(overflow),
@@ -139,6 +149,7 @@ pub fn binary(op: Op, a: &Value, b: &Value) -> R {
 // `needle in hay`
 pub fn contains(hay: &Value, needle: &Value) -> Result<bool, Flow> {
     match hay {
+        Value::Object(o) if o.items().is_some() => Ok(o.items().unwrap().iter().any(|x| equal(x, needle))),
         Value::List(l) => Ok(l.borrow().iter().any(|x| equal(x, needle))),
         Value::Map(m) => Ok(Key::from(needle).is_ok_and(|k| m.borrow().contains_key(&k))),
         Value::Str(s) => Ok(s.contains(&**needle.as_str("left side of `in` a string")?)),
@@ -162,6 +173,11 @@ fn out_of_range(i: i64, len: usize) -> Flow {
 }
 
 pub fn get_index(obj: &Value, idx: &Value) -> R {
+    if let Value::Object(o) = obj
+        && let Some(r) = o.index(idx)
+    {
+        return r;
+    }
     match obj {
         Value::List(l) => {
             let l = l.borrow();
@@ -226,6 +242,11 @@ fn bounds(lo: &Value, hi: &Value, len: usize) -> Result<(usize, usize), Flow> {
 }
 
 pub fn get_slice(obj: &Value, lo: &Value, hi: &Value) -> R {
+    if let Value::Object(o) = obj
+        && let Some(r) = o.slice(lo, hi)
+    {
+        return r;
+    }
     match obj {
         Value::List(l) => {
             let l = l.borrow();
@@ -257,6 +278,7 @@ pub fn iter_init(v: &Value) -> R {
         Value::Str(s) => IterState::Items(s.chars().map(|c| Value::str(c.to_string())).collect(), 0),
         Value::Map(m) => IterState::Items(m.borrow().keys().map(Key::value).collect(), 0),
         Value::Iter(_) => return Ok(v.clone()),
+        Value::Object(o) if o.items().is_some() => IterState::Items(o.items().unwrap(), 0),
         other => return Err(type_err(format!("cannot loop over {}", other.kind_name()))),
     };
     Ok(Value::Iter(Rc::new(RefCell::new(st))))

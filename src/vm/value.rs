@@ -130,6 +130,33 @@ pub trait Object {
     fn call_method(&self, _vm: &mut Vm, _this: &Value, name: &str, _a: Args) -> R {
         Err(err("AttributeError", format!("{} has no method `{name}`", self.type_name())))
     }
+    // a OP b with this object on one side; None = not supported
+    fn binary(&self, _op: crate::compile::chunk::Op, _other: &Value, _swapped: bool) -> Option<R> {
+        None
+    }
+    fn index(&self, _idx: &Value) -> Option<R> {
+        None
+    }
+    fn slice(&self, _lo: &Value, _hi: &Value) -> Option<R> {
+        None
+    }
+    fn len(&self) -> Option<usize> {
+        None
+    }
+    fn is_empty(&self) -> bool {
+        self.len() == Some(0)
+    }
+    // elements for loops, list(), `in`
+    fn items(&self) -> Option<Vec<Value>> {
+        None
+    }
+    // fast path for number crunching
+    fn numbers(&self) -> Option<std::rc::Rc<[f64]>> {
+        None
+    }
+    fn equals(&self, _other: &Value) -> bool {
+        false
+    }
 }
 
 impl fmt::Debug for Value {
@@ -343,7 +370,7 @@ pub fn equal(a: &Value, b: &Value) -> bool {
         (Value::Instance(x), Value::Instance(y)) => Rc::ptr_eq(x, y),
         (Value::Module(x), Value::Module(y)) => Rc::ptr_eq(x, y),
         (Value::Error(x), Value::Error(y)) => Rc::ptr_eq(x, y),
-        (Value::Object(x), Value::Object(y)) => Rc::ptr_eq(x, y),
+        (Value::Object(x), Value::Object(y)) => Rc::ptr_eq(x, y) || x.equals(b),
         _ => false,
     }
 }

@@ -106,6 +106,8 @@ pub struct FileResult {
     pub duration_ms: f64,
     pub module_output: String,
     pub results: Vec<TestResult>,
+    // data files read, with sha256, so a run can be traced to exact inputs
+    pub data_files: Vec<(String, String)>,
 }
 
 // saved snapshot values for one test file
@@ -234,7 +236,7 @@ fn file_error(file: &str, msg: String, output: String) -> FileResult {
         runs: None,
         seed: 0,
     };
-    FileResult { file: file.into(), duration_ms: 0.0, module_output: String::new(), results: vec![r] }
+    FileResult { file: file.into(), duration_ms: 0.0, module_output: String::new(), results: vec![r], data_files: vec![] }
 }
 
 pub fn run_file(file: &str, opts: &Options) -> FileResult {
@@ -288,7 +290,13 @@ pub fn run_file(file: &str, opts: &Options) -> FileResult {
     if let Err(e) = snaps.borrow().save() {
         eprintln!("warning: cannot save snapshots for {file}: {e}");
     }
-    FileResult { file: file.into(), duration_ms: t0.elapsed().as_secs_f64() * 1000.0, module_output, results }
+    FileResult {
+        file: file.into(),
+        duration_ms: t0.elapsed().as_secs_f64() * 1000.0,
+        module_output,
+        results,
+        data_files: vm.data_files.clone(),
+    }
 }
 
 fn run_one(vm: &mut Vm, def: &TestDef, kind: TestKind, opts: &Options, snaps: &Rc<RefCell<Snapshots>>) -> TestResult {

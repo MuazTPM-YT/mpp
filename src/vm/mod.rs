@@ -52,6 +52,8 @@ pub struct Vm {
     pub test_ctx: Option<TestCtx>,
     // stop with TimeoutError after this moment
     pub deadline: Option<std::time::Instant>,
+    // (path, sha256) of data files read, for reports
+    pub data_files: Vec<(String, String)>,
 }
 
 pub struct TestDef {
@@ -91,6 +93,7 @@ impl Vm {
             tests: Vec::new(),
             test_ctx: None,
             deadline: None,
+            data_files: Vec::new(),
         }
     }
 
@@ -410,6 +413,7 @@ impl Vm {
                     let v = match pop!() {
                         Value::Int(n) => Value::Int(tri!(n.checked_neg().ok_or_else(|| err("OverflowError", "integer overflow")))),
                         Value::Float(x) => Value::Float(-x),
+                        v @ Value::Object(_) => tri!(ops::binary(Op::Mul, &v, &Value::Int(-1))),
                         other => bail!(type_err(format!("cannot negate {}", other.kind_name()))),
                     };
                     self.stack.push(v);

@@ -68,11 +68,55 @@ mpp bench --baseline base.json --max-regress 10   # fail if 10% slower
 Exit code: 0 all passed, 1 something failed, 5 nothing found.
 Every run prints its seed; pass it back with `--seed` to repeat the exact run.
 
+## Data, stats and A/B tests
+
+```
+data = load_csv("checkout.csv")          # also load_jsonl, load_json, table({...}) / table([rows])
+data.group_by("variant", {"n": "count()", "rate": "mean(converted)"})
+g = data.groups("variant")               # map of sub-tables: g.A, g.B
+r = ab.proportions(g.A.converted, g.B.converted)
+print(f"lift {r.lift:+.1%}, p = {r.p_value:.4f}")
+```
+
+**Tables**: `col`, `row`, `rows`, `head`, `tail`, `select`, `drop`, `rename`, `filter(fn)`,
+`where(col, op, value)`, `t[mask]`, `sort`, `with_col`, `group_by(by, aggs)`, `groups`, `join`,
+`describe`, `value_counts`, `unique`, `dropna`, `sample`, `shuffle`, `concat`, `save_csv`.
+Aggregates: `count() sum mean median min max std var nunique first last`.
+Missing cells (`""`, `NA`, `null`, ...) become `nil`. `true/false` become 1/0.
+
+**Vectors** (`vec(xs)`, table number columns): `+ - * / ** %` element-wise, `< <= > >=` give 0/1 masks,
+`v[mask]`; `sum mean median var std sem min max quantile skew kurtosis cumsum diff rank zscore
+sorted unique dropna isnan clip between dot corr cov histogram describe sample map filter`.
+`==` compares whole vectors.
+
+**stats**: `mean median var std quantile iqr mad sem skew kurtosis zscore describe ci_mean`,
+`ttest` (Welch; `equal_var = true` for Student), `ttest_1samp`, `ttest_rel`, `ztest`, `chi2`,
+`chi2_gof`, `fisher`, `mannwhitney`, `wilcoxon`, `ks`, `anova`, `kruskal`, `levene`, `shapiro`,
+`pearson`, `spearman`, `kendall`, `linregress`, `ols(table, "y ~ a + b")`, `cohens_d`, `hedges_g`,
+`cliffs_delta`, `odds_ratio`, `relative_risk`, `bootstrap` (BCa), `bootstrap_diff`,
+`permutation_test`, `adjust` (bonferroni, holm, hochberg, bh, by), and distributions
+(`norm_cdf/ppf/pdf`, `t_cdf/ppf`, `chi2_cdf/ppf`, `f_sf`, `beta_cdf/ppf`, `binom_pmf/cdf`, `poisson_pmf/cdf`).
+Every test returns a map: `statistic`, `p_value`, plus effect sizes and intervals.
+Numbers are checked against scipy and statsmodels (`tests/stats_ref.rs`, `tests/ab_ref.rs`).
+
+**ab**: `proportions`, `means`, `ratio` (delta method), `cuped`, `srm`, `aa`, `multi` (A/B/n with
+correction), `bayes` (Beta-Binomial: P(B better), expected loss), `bayes_means`, `msprt`
+(always-valid p-value, safe to peek), `sequential_bounds` (O'Brien-Fleming / Pocock spending),
+`segments` (with Simpson's paradox warning), `novelty`, `guardrail` (non-inferiority).
+
+**power**: `proportions`, `means`, `mde_proportions`, `mde_means`, `achieved_proportions`,
+`achieved_means`, `duration`.
+
+**bandit**: `thompson(k)`, `ucb1(k)`, `epsilon_greedy(k)` objects with `choose`, `update`, `stats`,
+`prob_best`; and `simulate(arms, policy, steps)` for regret.
+
+See `examples/ab_checkout.mpp` for a full A/B analysis.
+
 ## Language in one screen
 
 ```
 # comments use '#'; '//' is integer division
-import math, json               # built-in modules: math time io json rand gen
+import math, json               # built-in modules: math time io json rand gen stats ab power bandit
 import "lib/helpers.mpp" as h   # your own files
 
 const ALPHA = 0.05              # cannot change

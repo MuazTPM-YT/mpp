@@ -1,0 +1,37 @@
+import stats, ab, power, bandit, rand
+rand.seed(1)
+a = [12.1, 11.8, 13.0, 12.6, 12.2, 11.9, 12.8, 13.1]
+b = [13.0, 12.9, 13.8, 13.4, 13.1, 12.7, 13.9, 14.0]
+r = stats.ttest(a, b)
+print(r.method, f"{r.statistic:.4f} {r.p_value:.6f} {r.df:.3f}")
+print(f"{stats.mannwhitney(a, b).p_value:.6f} {stats.ks(a, b).p_value:.6f} {stats.wilcoxon(a, b).p_value:.6f}")
+print(f"{stats.shapiro(a).statistic:.5f} {stats.anova(a, b, [11, 12, 13]).p_value:.6f} {stats.kruskal([a, b]).p_value:.6f}")
+print(f"{stats.pearson(a, b).r:.5f} {stats.spearman(a, b).rho:.5f} {stats.kendall(a, b).tau:.5f}")
+print(f"{stats.chi2([[10, 20], [30, 25]]).p_value:.6f} {stats.fisher([[3, 7], [8, 2]]).p_value:.6f}")
+print(stats.adjust([0.01, 0.04, 0.03], method = "bh").map(p => round(p, 4)))
+fit = stats.ols(b, [a], names = ["a"])
+print(f"{fit.coef.a.estimate:.4f} {fit.r2:.4f}")
+bs = stats.bootstrap(a, fn = "mean", n = 2000)
+print(bs.method, bs.ci[0] < 12.3 and bs.ci[1] > 12.3)
+pt = stats.permutation_test(a, b, n = 2000)
+print(pt.p_value < 0.01)
+print(f"{stats.norm_ppf(0.975):.6f} {stats.t_ppf(0.975, 10):.6f} {stats.binom_cdf(3, 10, 0.5):.6f}")
+p = ab.proportions(x_a = 200, n_a = 2000, x_b = 250, n_b = 2000)
+print(f"{p.lift:.4f} {p.p_value:.6f} {p.significant}")
+print(ab.srm([5000, 5180]).mismatch, ab.srm([5000, 5600]).mismatch)
+m = ab.multi({"A": [0, 1, 0, 0, 1, 0, 0, 0] * 30, "B": [1, 1, 0, 1, 1, 0, 1, 0] * 30, "C": [0, 1, 0, 0, 1, 0, 1, 0] * 30})
+print(m.keys(), m.B.significant, m.C.significant)
+print(ab.sequential_bounds(looks = 3, spending = "pocock").looks.map(l => round(l.z_bound, 3)))
+q = ab.msprt([0, 1, 0, 1, 1, 0, 1, 0] * 50, [1, 1, 0, 1, 1, 1, 1, 0] * 50)
+print(q.significant, q.first_significant_at != nil)
+print(power.proportions(0.1, 0.1).n_a, power.means(10, 2).n_a, power.duration(10000, 800).days)
+print(power.mde_proportions(0.1, 5000).mde_rel > 0.1)
+sim = bandit.simulate([0.1, 0.2, 0.15], policy = "thompson", steps = 3000)
+print(sim.best_arm, sim.share[1] > 0.5)
+bt = bandit.thompson(2)
+for i in 0..200 {
+    arm = bt.choose()
+    bt.update(arm, arm == 1 ? (rand.float() < 0.6 ? 1 : 0) : (rand.float() < 0.3 ? 1 : 0))
+}
+print(bt.stats()[1].pulls > bt.stats()[0].pulls, bt.prob_best()[1] > 0.9)
+try { ab.proportions([0, 2], [1, 0]) } catch e { print(e.message) }

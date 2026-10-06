@@ -49,6 +49,12 @@ pub static BUILTINS: &[Native] = natives![
     "expect_throws" => super::testing::expect_throws,
     "expect_snapshot" => super::testing::expect_snapshot,
     "note" => super::testing::note,
+    "vec" => super::vec::vec_fn,
+    "linspace" => super::vec::linspace,
+    "table" => super::table::table_fn,
+    "load_csv" => super::table::load_csv,
+    "load_jsonl" => super::table::load_jsonl,
+    "load_json" => super::table::load_json,
 ];
 
 fn print(vm: &mut Vm, a: Args) -> R {
@@ -79,6 +85,7 @@ pub fn length(v: &Value) -> Result<i64, Flow> {
         Value::Map(m) => m.borrow().len() as i64,
         Value::Range(a, b) => (b - a).max(0),
         Value::Instance(i) => i.fields.borrow().len() as i64,
+        Value::Object(o) if o.len().is_some() => o.len().unwrap() as i64,
         other => return Err(type_err(format!("{} has no length", other.kind_name()))),
     })
 }

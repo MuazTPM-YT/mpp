@@ -134,6 +134,12 @@ pub fn describe(t: &Tok) -> String {
     }
 }
 
+// keyword spelled as a word (usable as field or argument name)
+pub fn keyword_word(t: &Tok) -> Option<&'static str> {
+    let s = symbol(t);
+    (s != "?" && s.chars().all(|c| c.is_ascii_alphabetic())).then_some(s)
+}
+
 fn symbol(t: &Tok) -> &'static str {
     match t {
         Tok::Fn => "fn",

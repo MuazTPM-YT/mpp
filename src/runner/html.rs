@@ -177,6 +177,13 @@ pub fn render(r: &RunReport) -> String {
         for t in &f.results {
             o.push_str(&test_html(t));
         }
+        if !f.data_files.is_empty() {
+            o.push_str("<div class=body style=\"padding-left:14px\"><div class=lbl>data files (sha256)</div><table>");
+            for (p, h) in &f.data_files {
+                let _ = write!(o, "<tr><td>{}</td><td><code>{}</code></td></tr>", esc(p), esc(h));
+            }
+            o.push_str("</table></div>");
+        }
         o.push_str("</section>");
     }
     let _ = writeln!(o, "<script>{SCRIPT}</script></main></body></html>");

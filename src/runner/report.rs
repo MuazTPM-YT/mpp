@@ -159,6 +159,7 @@ pub fn short(v: &J) -> String {
         }
         J::String(s) => s.clone(),
         J::Array(a) if a.len() > 8 => format!("[{} items]", a.len()),
+        J::Array(a) => format!("[{}]", a.iter().map(short).collect::<Vec<_>>().join(", ")),
         other => other.to_string(),
     }
 }

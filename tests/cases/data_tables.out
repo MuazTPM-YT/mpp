@@ -1,0 +1,40 @@
+id  name  team   score  hours  active
+──  ────  ─────  ─────  ─────  ──────
+ 1  ann   red     88.5     10       1
+ 2  bob   blue      72      ·       0
+ 3  cy    red    95.25     12       1
+ 4  di    blue       ·      8       1
+ 5  ed    green     60      5       0
+ 6  fay   red       81      9       1
+[6 rows × 6 columns]
+["id", "name", "team", "score", "hours", "active"] 6 6 6
+vec([88.5, 72.0, 95.25, nan, 60.0, 81.0]) ["ann", "bob", "cy", "di", "ed", "fay"] red
+{"id": 1, "name": "ann", "team": "red", "score": 88.5, "hours": 10, "active": 1} fay
+["ann", "cy", "fay"]
+["ann", "cy", "fay"]
+["ann", "cy", "fay"]
+["cy", "ann", "fay", "bob", "ed", "di"]
+["bob", "di", "ed", "ann", "cy", "fay"]
+["name", "score"] ["id", "name", "team", "score", "active"] ["id", "name", "team", "pts", "hours", "active"]
+team   n  avg    top    hours  first
+─────  ─  ─────  ─────  ─────  ─────
+red    3  88.25  95.25     31  ann
+blue   2     72     72      8  bob
+green  1     60     60      5  ed
+[3 rows × 6 columns]
+{"red": 3, "blue": 2, "green": 1} ["red", "blue", "green"]
+4 5
+vec([5.0, 0.0, 5.0, 5.0, 0.0, 5.0]) vec([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+["id", "name", "team", "score", "hours", "active", "coach"] 5 ["zed", "yan", "zed", "yan", "zed"]
+["zed", "yan", "zed", "yan", nil, "zed"]
+["red", "blue", "green"] 3
+2 vec([5.0, 6.0]) vec([2.0, 3.0])
+["id", "score", "hours", "active"] vec([6.0, 5.0, 5.0, 6.0])
+a    b
+───  ─
+  1  x
+2.5  ·
+[2 rows × 2 columns]
+ann 88.5
+bob 72.0
+12

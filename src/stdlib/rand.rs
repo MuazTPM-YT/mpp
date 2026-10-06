@@ -62,6 +62,33 @@ impl Rng {
         }
     }
 
+    // gamma(shape, 1), Marsaglia-Tsang
+    pub fn gamma(&mut self, shape: f64) -> f64 {
+        if shape < 1.0 {
+            let u = self.float().max(1e-300);
+            return self.gamma(shape + 1.0) * u.powf(1.0 / shape);
+        }
+        let d = shape - 1.0 / 3.0;
+        let c = 1.0 / (9.0 * d).sqrt();
+        loop {
+            let x = self.normal();
+            let v = (1.0 + c * x).powi(3);
+            if v <= 0.0 {
+                continue;
+            }
+            let u = self.float();
+            if u < 1.0 - 0.0331 * x.powi(4) || u.max(1e-300).ln() < 0.5 * x * x + d * (1.0 - v + v.ln()) {
+                return d * v;
+            }
+        }
+    }
+
+    pub fn beta(&mut self, a: f64, b: f64) -> f64 {
+        let x = self.gamma(a);
+        let y = self.gamma(b);
+        x / (x + y)
+    }
+
     pub fn shuffle<T>(&mut self, v: &mut [T]) {
         for i in (1..v.len()).rev() {
             let j = self.below(i as u64 + 1) as usize;

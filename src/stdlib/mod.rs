@@ -1,3 +1,5 @@
+pub mod ab;
+pub mod bandit;
 pub mod core;
 pub mod fmt;
 pub mod generators;
@@ -6,10 +8,14 @@ pub mod json;
 pub mod list;
 pub mod map;
 pub mod math;
+pub mod power;
 pub mod rand;
+pub mod stats;
 pub mod str;
+pub mod table;
 pub mod testing;
 pub mod time;
+pub mod vec;
 
 use crate::vm::{Args, Flow, Native, R, Value, Vm, err};
 use indexmap::IndexMap;
@@ -21,7 +27,7 @@ pub fn builtin_index(name: &str) -> Option<u16> {
     BUILTINS.iter().position(|n| n.name == name).map(|i| i as u16)
 }
 
-pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand", "gen"];
+pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand", "gen", "stats", "ab", "power", "bandit"];
 
 pub fn is_module(name: &str) -> bool {
     MODULES.contains(&name)
@@ -36,6 +42,10 @@ pub fn module(name: &str) -> Option<IndexMap<Rc<str>, Value>> {
         "json" => (json::FNS, vec![]),
         "rand" => (rand::FNS, vec![]),
         "gen" => (generators::FNS, vec![]),
+        "stats" => (stats::FNS, vec![]),
+        "ab" => (ab::FNS, vec![]),
+        "power" => (power::FNS, vec![]),
+        "bandit" => (bandit::FNS, vec![]),
         _ => return None,
     };
     let mut m: IndexMap<Rc<str>, Value> = fns.iter().map(|n| (Rc::from(n.name), Value::Native(n))).collect();
@@ -84,6 +94,7 @@ pub fn to_vec(v: &Value, what: &str) -> Result<Vec<Value>, Flow> {
         }
         Value::Str(s) => s.chars().map(|c| Value::str(c.to_string())).collect(),
         Value::Map(m) => m.borrow().keys().map(|k| k.value()).collect(),
+        Value::Object(o) if o.items().is_some() => o.items().unwrap(),
         other => {
             return Err(crate::vm::type_err(format!("{what} must be a list, range, str or map, got {}", other.kind_name())));
         }
@@ -94,6 +105,7 @@ pub fn to_vec(v: &Value, what: &str) -> Result<Vec<Value>, Flow> {
 pub fn to_f64s(v: &Value, what: &str) -> Result<Vec<f64>, Flow> {
     match v {
         Value::List(l) => l.borrow().iter().map(|x| x.num(what)).collect(),
+        Value::Object(o) if o.numbers().is_some() => Ok(o.numbers().unwrap().to_vec()),
         other => to_vec(other, what)?.iter().map(|x| x.num(what)).collect(),
     }
 }

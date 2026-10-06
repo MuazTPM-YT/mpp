@@ -1,0 +1,53 @@
+# A/B test of a new checkout button, end to end.
+# run:   mpp run examples/ab_checkout.mpp
+# test:  mpp test examples/ab_checkout.mpp
+import ab, power, stats
+
+data = load_csv("examples/data/checkout.csv")
+print(data.head(5))
+print(data.group_by("variant", {"users": "count()", "conv_rate": "mean(converted)", "revenue": "mean(revenue)"}))
+
+g = data.groups("variant")
+a = g.A
+b = g.B
+
+# 1. sanity first: did traffic split 50/50?
+split = ab.srm([a.nrows, b.nrows])
+print(f"SRM p = {split.p_value:.3f}, mismatch = {split.mismatch}")
+
+# 2. main metric: conversion
+conv = ab.proportions(a.converted, b.converted)
+print(f"conversion {conv.rate_a:.2%} -> {conv.rate_b:.2%}, lift {conv.lift:+.1%} (95% CI {conv.ci_lift[0]:+.1%} .. {conv.ci_lift[1]:+.1%}), p = {conv.p_value:.4f}")
+
+# 3. bayesian view of the same numbers
+bay = ab.bayes(a.converted, b.converted)
+print(f"P(B better) = {bay.prob_b_better:.3f}, expected loss if we ship B = {bay.expected_loss_b:.5f}")
+
+# 4. revenue per user, with CUPED using pre-period revenue
+clean = data.dropna("pre_revenue").groups("variant")
+cu = ab.cuped(clean.A.revenue, clean.A.pre_revenue, clean.B.revenue, clean.B.pre_revenue)
+print(f"revenue lift {cu.lift:+.1%}, p = {cu.p_value:.4f} (raw p = {cu.p_value_unadjusted:.4f}), variance cut {cu.variance_reduction:.0%}")
+
+# 5. guardrail: revenue must not drop more than 2%
+gr = ab.guardrail(a.revenue, b.revenue, margin = 0.02, relative = true)
+print(f"guardrail passed = {gr.passed}")
+
+# 6. who wins where? and does the lift fade (novelty)?
+seg = ab.segments(data, variant = "variant", metric = "converted", by = "country")
+for k, v in seg.segments.items() { print(f"  {k}: lift {v.lift:+.1%} p = {v.p_value:.3f}") }
+nov = ab.novelty(data, variant = "variant", metric = "converted", time = "day", periods = 7)
+print(f"lift trend per period {nov.trend_slope:+.4f}, novelty suspected = {nov.novelty_suspected}")
+
+# 7. was the test big enough?
+need = power.proportions(conv.rate_a, 0.10)
+print(f"to detect +10% relative lift: {need.n_a} users per group")
+
+experiment "checkout button ships" {
+    expect not split.mismatch
+    expect conv.p_value < 0.05
+    expect conv.lift > 0
+    expect gr.passed
+    report "conversion": conv
+    report "bayes": bay
+    report "revenue (CUPED)": cu
+}

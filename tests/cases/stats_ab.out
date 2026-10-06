@@ -1,0 +1,20 @@
+Welch two-sample t-test -3.6403 0.002677 13.998
+0.009972 0.087024 0.011109
+0.92064 0.004423 0.008554
+0.96915 0.95238 0.85714
+0.099962 0.069779
+[0.03, 0.04, 0.04]
+0.9585 0.9393
+bootstrap (bca) true
+true
+1.959964 2.228139 0.171875
+0.2500 0.012351 true
+false true
+["B", "C"] true true
+[2.279, 2.295, 2.296]
+true true
+14751 393 13
+true
+1 true
+true true
+proportions() data must be 0/1 (or true/false); for other numbers use ab.means

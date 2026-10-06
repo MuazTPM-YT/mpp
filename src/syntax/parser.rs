@@ -1,6 +1,6 @@
 use super::ast::*;
 use super::lexer::lex;
-use super::token::{FPiece, Tok, Token, describe};
+use super::token::{FPiece, Tok, Token, describe, keyword_word};
 use super::{Diag, Span};
 use std::rc::Rc;
 
@@ -119,6 +119,14 @@ impl Parser {
             Tok::Ident(n) => Ok((n, self.bump().span)),
             _ => Err(self.unexpected(want)),
         }
+    }
+
+    // name after `.`: keywords allowed (t.const, r.in)
+    fn field_name(&mut self) -> PResult<(Name, Span)> {
+        if let Some(w) = keyword_word(self.peek()) {
+            return Ok((w.into(), self.bump().span));
+        }
+        self.ident("name after `.`")
     }
 
     fn skip_newlines(&mut self) {
@@ -650,7 +658,7 @@ impl Parser {
                 }
                 Tok::Dot => {
                     self.bump();
-                    let (name, ns) = self.ident("name after `.`")?;
+                    let (name, ns) = self.field_name()?;
                     let span = e.span.to(ns);
                     e = Expr { kind: ExprKind::Prop(Box::new(e), name), span };
                 }
@@ -679,6 +687,15 @@ impl Parser {
                 return Ok(out);
             }
             let name = match (self.peek().clone(), self.peek_at(1)) {
+                (t, Tok::Assign) if keyword_word(&t).is_some() => {
+                    let s = self.bump().span;
+                    self.bump();
+                    let n: Name = keyword_word(&t).unwrap().into();
+                    if out.iter().any(|a| a.name.as_ref() == Some(&n)) {
+                        return Err(Diag::new(format!("argument `{n}` given twice"), s));
+                    }
+                    Some(n)
+                }
                 (Tok::Ident(n), Tok::Assign) => {
                     let s = self.bump().span;
                     self.bump();
