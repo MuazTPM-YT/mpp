@@ -59,6 +59,13 @@ pub fn to_json(v: &Value, depth: usize) -> Result<J, Flow> {
             J::Object(o)
         }
         Value::Error(e) => serde_json::json!({"kind": &*e.kind, "message": &*e.message}),
+        // vecs become number arrays (NaN as null), tables become row lists
+        Value::Object(o) if o.numbers().is_some() => {
+            J::Array(o.numbers().unwrap().iter().map(|x| serde_json::Number::from_f64(*x).map_or(J::Null, J::Number)).collect())
+        }
+        Value::Object(o) if o.items().is_some() => {
+            J::Array(o.items().unwrap().iter().map(|x| to_json(x, depth + 1)).collect::<Result<_, _>>()?)
+        }
         other => return Err(type_err(format!("JSON cannot hold {}", other.kind_name()))),
     })
 }

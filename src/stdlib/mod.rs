@@ -8,6 +8,7 @@ pub mod json;
 pub mod list;
 pub mod map;
 pub mod math;
+pub mod ml;
 pub mod power;
 pub mod rand;
 pub mod stats;
@@ -27,7 +28,7 @@ pub fn builtin_index(name: &str) -> Option<u16> {
     BUILTINS.iter().position(|n| n.name == name).map(|i| i as u16)
 }
 
-pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand", "gen", "stats", "ab", "power", "bandit"];
+pub const MODULES: &[&str] = &["math", "time", "io", "json", "rand", "gen", "stats", "ab", "power", "bandit", "ml"];
 
 pub fn is_module(name: &str) -> bool {
     MODULES.contains(&name)
@@ -46,6 +47,7 @@ pub fn module(name: &str) -> Option<IndexMap<Rc<str>, Value>> {
         "ab" => (ab::FNS, vec![]),
         "power" => (power::FNS, vec![]),
         "bandit" => (bandit::FNS, vec![]),
+        "ml" => (ml::FNS, vec![]),
         _ => return None,
     };
     let mut m: IndexMap<Rc<str>, Value> = fns.iter().map(|n| (Rc::from(n.name), Value::Native(n))).collect();

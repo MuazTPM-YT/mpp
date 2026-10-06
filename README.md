@@ -112,11 +112,34 @@ correction), `bayes` (Beta-Binomial: P(B better), expected loss), `bayes_means`,
 
 See `examples/ab_checkout.mpp` for a full A/B analysis.
 
+## ML model tests (`ml`)
+
+Labels can be numbers, strings or bools. Scores are a list/vec (binary) or rows (one column per class).
+
+- **classification**: `accuracy`, `balanced_accuracy`, `precision`, `recall`, `f1`, `fbeta`
+  (`average = "binary" | "macro" | "micro" | "weighted" | "none"`), `confusion_matrix`,
+  `classification_report`, `roc_auc` (binary or one-vs-rest), `roc_curve`, `pr_curve`,
+  `average_precision` / `pr_auc`, `log_loss`, `brier`, `mcc`, `cohen_kappa`, `top_k_accuracy`
+- **regression**: `regression` (all at once), `mae`, `mse`, `rmse`, `r2`, `mape`
+- **ranking** (relevance in ranked order, one list per query): `ndcg`, `map_at_k`, `mrr`,
+  `precision_at_k`, `recall_at_k`, `hit_rate`
+- **calibration**: `calibration(y, probs, bins, strategy)` gives ECE, MCE and a bin table
+- **drift**: `psi`, `wasserstein`, `kl`, `js`, `drift(ref_table, cur_table)` per column
+- **fairness**: `fairness(y, pred, group)`: selection rate, TPR, FPR per group, demographic
+  parity, disparate impact (80% rule), equal opportunity, equalized odds
+- **compare models**: `delong` (two AUCs), `mcnemar`, `paired_bootstrap` (any metric), `cv5x2`
+- **tuning and slices**: `threshold_sweep`, `slices(table, y, pred, by)` (worst slice first)
+- **data checks**: `check` (missing, duplicates, constant columns, ranges), `schema`,
+  `leakage(train, test)`, `label_balance`
+
+Metric numbers are checked against scikit-learn (`tests/ml_ref.rs`).
+See `examples/model_eval.mpp`.
+
 ## Language in one screen
 
 ```
 # comments use '#'; '//' is integer division
-import math, json               # built-in modules: math time io json rand gen stats ab power bandit
+import math, json               # built-in modules: math time io json rand gen stats ab power bandit ml
 import "lib/helpers.mpp" as h   # your own files
 
 const ALPHA = 0.05              # cannot change

@@ -1,0 +1,30 @@
+0.8
+label         precision  recall  f1   support
+────────────  ─────────  ──────  ───  ───────
+0                   0.8     0.8  0.8        5
+1                   0.8     0.8  0.8        5
+macro avg           0.8     0.8  0.8       10
+weighted avg        0.8     0.8  0.8       10
+[4 rows × 5 columns]
+{"labels": ["cat", "dog"], "matrix": [[2, 0], [1, 0]]}
+{"x": 0.6666666666666666, "y": 0.0}
+0.8
+{"n": 5, "selection_rate": 0.4, "tpr": 0.6666666666666666, "fpr": 0.0, "precision": 1.0, "accuracy": 0.8} 0.19999999999999996 false
+0.96 true
+0.355 0.9090909090909091 11
+0.9777813616305049 0.75 0.5
+0.3333333333333333 0.0 0.8333333333333333
+none
+{"rows": 4, "columns": 3, "missing": {"f": 1, "c": 0, "k": 0}, "missing_share": 0.08333333333333333, "duplicates": 0, "constant": ["k"], "ranges": {"f": [1.5, 3.5], "k": [1.0, 1.0]}}
+{"ok": false, "problems": ["column `c` is text, expected number", "missing column `z`"]}
+{"overlap_rows": 1, "overlap_share": 0.5, "leak": true}
+true
+0.19999999999999996 false
+slice  n  metric  gap
+─────  ─  ──────  ───
+a      5     0.8    0
+b      5     0.8    0
+[2 rows × 4 columns]
+["x"] number
+roc_auc(): need both positive and negative labels
+accuracy(): labels and predictions: lengths differ (2 and 1)

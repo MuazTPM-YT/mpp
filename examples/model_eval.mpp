@@ -1,0 +1,55 @@
+# Compare a new churn model with the old one, then check drift and fairness.
+# run:   mpp run examples/model_eval.mpp
+# test:  mpp test examples/model_eval.mpp
+import ml
+
+data = load_csv("examples/data/churn_preds.csv")
+y = data.label
+old = data.score_old
+new = data.score_new
+pred_old = (old >= 0.5).list().map(x => int(x))
+pred_new = (new >= 0.5).list().map(x => int(x))
+
+print(ml.check(data))
+print(ml.label_balance(y))
+
+auc = ml.delong(y, old, new)
+print(f"AUC old {auc.auc_a:.3f} -> new {auc.auc_b:.3f}, DeLong p = {auc.p_value:.2g}")
+print(f"log loss old {ml.log_loss(y, old):.4f} new {ml.log_loss(y, new):.4f}")
+print(f"brier    old {ml.brier(y, old):.4f} new {ml.brier(y, new):.4f}")
+
+cal = ml.calibration(y, new)
+print(f"calibration error (ECE) new model: {cal.ece:.4f}")
+
+sweep = ml.threshold_sweep(y, new, metric = "f1")
+print(f"best F1 {sweep.best_score:.3f} at threshold {sweep.best_threshold:.2f}")
+
+cmp = ml.mcnemar(y, pred_old, pred_new)
+print(f"McNemar p = {cmp.p_value:.3g} (old only right {cmp.only_a_right}, new only right {cmp.only_b_right})")
+
+fair_old = ml.fairness(y, pred_old, data.col("gender"))
+fair_new = ml.fairness(y, pred_new, data.col("gender"))
+print(f"disparate impact old {fair_old.disparate_impact:.2f}, new {fair_new.disparate_impact:.2f}")
+
+t = data.with_col("pred_new", pred_new)
+print(ml.slices(t, "label", "pred_new", "region").table)
+
+drift = ml.drift(data.where("month", "==", 1).select("tenure", "spend", "region"), data.where("month", "==", 2).select("tenure", "spend", "region"))
+print("drifted columns:", drift.drifted)
+
+experiment "new churn model is ready" {
+    expect auc.auc_b > auc.auc_a
+    expect auc.p_value < 0.05
+    expect ml.log_loss(y, new) < ml.log_loss(y, old)
+    expect cal.ece < 0.05
+    expect fair_new.passes_80_rule
+    report "AUC": auc
+    report "fairness (new)": {"disparate_impact": fair_new.disparate_impact, "equalized_odds_diff": fair_new.equalized_odds_diff}
+    report "drift": drift.drifted
+}
+
+test "no train/test leakage between months" {
+    m1 = data.where("month", "==", 1)
+    m2 = data.where("month", "==", 2)
+    expect not ml.leakage(m1, m2, columns = ["user_id"]).leak
+}

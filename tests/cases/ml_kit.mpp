@@ -1,0 +1,34 @@
+import ml, rand
+rand.seed(5)
+y = [1, 0, 1, 1, 0, 0, 1, 0, 1, 0]
+p = [1, 0, 0, 1, 0, 1, 1, 0, 1, 0]
+g = ["a", "a", "a", "a", "a", "b", "b", "b", "b", "b"]
+r = ml.classification_report(y, p)
+print(r.accuracy)
+print(r.table)
+print(ml.confusion_matrix(["cat", "dog", "cat"], ["cat", "cat", "cat"]))
+print(ml.precision(["x", "y", "x"], ["x", "x", "x"], average = "none"))
+print(ml.f1([true, false, true], [true, true, true]))
+f = ml.fairness(y, p, g)
+print(f.groups.a, f.demographic_parity_diff, f.passes_80_rule)
+s = [0.9, 0.2, 0.4, 0.8, 0.3, 0.6, 0.7, 0.1, 0.95, 0.35]
+roc = ml.roc_curve(y, s)
+print(roc.auc, len(roc.fpr) == len(roc.tpr))
+sw = ml.threshold_sweep(y, s, steps = 11)
+print(sw.best_threshold, sw.best_score, sw.table.nrows)
+print(ml.ndcg([3, 2, 3, 0, 1, 2], k = 3), ml.mrr([[0, 1, 0], [1, 0, 0]]), ml.precision_at_k([1, 0, 1, 1], k = 2))
+print(ml.recall_at_k([1, 0, 1, 1], k = 2), ml.hit_rate([[0, 0, 1], [0, 0, 0]], k = 2), ml.map_at_k([1, 0, 1, 0], k = 4))
+print(ml.psi([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).level)
+t = table({"f": [1.5, 2.5, 3.5, nil], "c": ["a", "a", "b", "b"], "k": [1, 1, 1, 1]})
+print(ml.check(t))
+print(ml.schema(t, {"f": "number", "c": "number", "z": "text"}))
+print(ml.leakage(t, table({"f": [2.5, 9.0], "c": ["a", "q"], "k": [1, 1]})))
+print(ml.cv5x2([[0.02, 0.01], [0.03, 0.02], [0.01, 0.02], [0.02, 0.03], [0.01, 0.01]]).p_value < 0.5)
+pb = ml.paired_bootstrap(y, p, y, n = 500)
+print(pb.diff, pb.ci[0] > 0)
+data = table({"label": y, "pred": p, "grp": g})
+print(ml.slices(data, "label", "pred", "grp").table)
+d = ml.drift(table({"x": [1, 2, 3, 4, 5, 6, 7, 8] * 5}), table({"x": [5, 6, 7, 8, 9, 10, 11, 12] * 5}))
+print(d.drifted, d.columns.x.kind)
+try { ml.roc_auc([1, 1], [0.2, 0.4]) } catch e { print(e.message) }
+try { ml.accuracy([1, 2], [1]) } catch e { print(e.message) }
