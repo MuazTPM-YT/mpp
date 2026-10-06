@@ -21,7 +21,7 @@ experiment "run A is healthy enough to keep" {
     report "loss curve": a.plot(["loss", "val_loss"])
     report "learning rate": a.plot("lr")
     expect health.healthy
-    expect "overfitting" in health.problems      # we know: val loss turns up near the end
+    expect "overfitting" in health.problems  # we know: val loss turns up near the end
 }
 
 test "run B blew up and we catch it" {

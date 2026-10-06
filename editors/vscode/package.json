@@ -1,0 +1,49 @@
+{
+  "name": "muazpp",
+  "displayName": "Muaz++",
+  "description": "Muaz++ (.mpp) language support: highlighting, errors as you type, hover docs, completion, go to definition, outline, formatting.",
+  "version": "0.1.0",
+  "publisher": "muazpp",
+  "license": "MIT",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Programming Languages", "Formatters", "Testing"],
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:mpp"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "mpp",
+        "aliases": ["Muaz++", "mpp"],
+        "extensions": [".mpp"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      { "language": "mpp", "scopeName": "source.mpp", "path": "./syntaxes/mpp.tmLanguage.json" }
+    ],
+    "configuration": {
+      "title": "Muaz++",
+      "properties": {
+        "mpp.path": { "type": "string", "default": "mpp", "description": "Path to the mpp binary." },
+        "mpp.lsp.enable": { "type": "boolean", "default": true, "description": "Start the Muaz++ language server." }
+      }
+    },
+    "commands": [
+      { "command": "mpp.run", "title": "Muaz++: Run File" },
+      { "command": "mpp.test", "title": "Muaz++: Test File" },
+      { "command": "mpp.testReport", "title": "Muaz++: Test File with HTML Report" }
+    ],
+    "menus": {
+      "editor/title/run": [ { "command": "mpp.run", "when": "editorLangId == mpp" } ]
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "~9.0.1"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "~3.2.2"
+  },
+  "scripts": {
+    "package": "vsce package --allow-missing-repository"
+  }
+}

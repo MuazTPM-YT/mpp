@@ -1,6 +1,9 @@
 pub mod compile;
 pub mod diag;
+pub mod docs;
 pub mod driver;
+pub mod fmt;
+pub mod lsp;
 pub mod runner;
 pub mod stdlib;
 pub mod syntax;

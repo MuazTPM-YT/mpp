@@ -75,6 +75,10 @@ const BITS: &[&str] = &[
 ];
 
 fn check(src: &str) {
+    // formatter: never panics; output (if any) is stable
+    if let Ok(out) = mpp::fmt::format(src) {
+        assert_eq!(mpp::fmt::format(&out).ok().as_deref(), Some(out.as_str()), "fmt not stable for {src:?}");
+    }
     if let Ok(ast) = mpp::syntax::parse(src) {
         let _ = mpp::compile::emit::compile_module(&ast, "fuzz.mpp", src, &[], false);
     }

@@ -13,4 +13,5 @@ jobs:
       - run: cargo test
       - run: cargo build --release
       - run: ./target/release/mpp check examples/*.mpp
+      - run: ./target/release/mpp fmt --check examples
       - run: ./target/release/mpp test examples/ --report junit:junit.xml

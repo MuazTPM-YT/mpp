@@ -18,6 +18,8 @@ struct State {
     reward: Vec<f64>,
 }
 
+pub const METHODS: &[&str] = &["choose", "update", "stats", "prob_best"];
+
 pub struct Bandit {
     policy: Policy,
     st: RefCell<State>,
@@ -79,7 +81,7 @@ impl Object for Bandit {
         self
     }
     fn methods(&self) -> &'static [&'static str] {
-        &["choose", "update", "stats", "prob_best"]
+        METHODS
     }
     fn call_method(&self, vm: &mut Vm, _this: &Value, name: &str, a: Args) -> R {
         let k = self.st.borrow().pulls.len();

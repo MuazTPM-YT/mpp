@@ -1,0 +1,941 @@
+## prelude
+print(*values, sep = " ", end = "\n")
+  Write values to the output, separated by `sep`.
+len(x)
+  Number of items in a str, list, map, range, vec or table.
+type(x)
+  Type name as a string: "int", "str", "list", or the class name.
+str(x)
+  Text form of any value.
+repr(x)
+  Text form with strings quoted.
+int(x, base = 10)
+  Whole number from a number or a string.
+float(x)
+  Decimal number from a number or a string.
+bool(x)
+  Truth value of x.
+list(x)
+  List from a range, str, map (keys), vec or table (rows).
+range(start, end, step = 1)
+  Numbers from start up to (not including) end. range(n) is 0..n.
+abs(x)
+  Absolute value.
+min(*values, key = nil, default = nil)
+  Smallest value (of many args, or of one list).
+max(*values, key = nil, default = nil)
+  Largest value (of many args, or of one list).
+sum(xs, start = 0)
+  Sum of items; float lists use compensated summation.
+round(x, ndigits = nil)
+  Round half to even. With ndigits gives a float.
+sorted(xs, key = nil, reverse = false)
+  New sorted list.
+reversed(xs)
+  New list in reverse order.
+enumerate(xs, start = 0)
+  List of [index, item] pairs.
+zip(*lists)
+  List of rows taking one item from each list.
+any(xs)
+  True if any item is truthy.
+all(xs)
+  True if every item is truthy.
+input(prompt = nil)
+  Read one line from the keyboard (nil at end of input).
+error(message, kind = "Error")
+  Make an error value; use with `throw`.
+assert(cond, message = nil)
+  Throw AssertionError when cond is false.
+env(name, default = nil)
+  Environment variable (also read from .env).
+args()
+  Command line arguments after `mpp run file.mpp --`.
+exit(code = 0)
+  Stop the program.
+warn(*values)
+  Print a warning to stderr.
+chr(code)
+  Character for a Unicode code point.
+ord(ch)
+  Unicode code point of one character.
+copy(x)
+  Shallow copy of a list, map or instance.
+isinstance(x, type)
+  True if x is an instance of a class (or has the given type name).
+callable(x)
+  True if x can be called.
+skip(reason = "")
+  Skip the running test block.
+expect_throws(fn, kind = nil, contains = nil)
+  Call fn; it must throw (optionally of `kind`, message containing `contains`). Returns the error.
+expect_snapshot(value, name = nil)
+  Compare value with its saved snapshot; first run saves it.
+note(*values)
+  Add a note line to the test report.
+vec(xs)
+  Fast number vector; nil becomes NaN (missing).
+linspace(lo, hi, n = 50)
+  n evenly spaced numbers from lo to hi.
+table(data)
+  Table from a map of columns or a list of row maps.
+load_csv(path, sep = ",")
+  Load a CSV/TSV file as a table, guessing column types.
+load_jsonl(path)
+  Load a JSON-lines file (one object per line) as a table.
+load_json(path)
+  Load a JSON file (list of rows or map of columns) as a table.
+plot(data, x, y, title = nil, log = false)
+  Line chart of table (or training log) columns; shows in HTML reports.
+
+## math
+sqrt(x)
+  Square root.
+exp(x)
+  e to the power x.
+log(x, base = e)
+  Logarithm.
+log2(x)
+  Base-2 logarithm.
+log10(x)
+  Base-10 logarithm.
+log1p(x)
+  log(1 + x), accurate for small x.
+expm1(x)
+  exp(x) - 1, accurate for small x.
+sin(x)
+  Sine (radians).
+cos(x)
+  Cosine (radians).
+tan(x)
+  Tangent (radians).
+asin(x)
+  Arc sine.
+acos(x)
+  Arc cosine.
+atan(x)
+  Arc tangent.
+atan2(y, x)
+  Angle of the point (x, y).
+sinh(x)
+  Hyperbolic sine.
+cosh(x)
+  Hyperbolic cosine.
+tanh(x)
+  Hyperbolic tangent.
+erf(x)
+  Error function.
+erfc(x)
+  Complementary error function.
+gamma(x)
+  Gamma function.
+lgamma(x)
+  Log of the gamma function.
+floor(x)
+  Round down to a whole number.
+ceil(x)
+  Round up to a whole number.
+trunc(x)
+  Drop the fraction.
+pow(x, y)
+  x to the power y, as a float.
+hypot(x, y)
+  sqrt(x*x + y*y).
+isnan(x)
+  True if x is NaN.
+isinf(x)
+  True if x is infinite.
+isfinite(x)
+  True if x is a normal number.
+clamp(x, lo, hi)
+  x limited to [lo, hi].
+sign(x)
+  -1, 0 or 1.
+gcd(a, b)
+  Greatest common divisor.
+factorial(n)
+  n! as an int.
+comb(n, k)
+  Number of ways to choose k of n.
+pi
+  3.14159...
+e
+  2.71828...
+tau
+  2 * pi.
+inf
+  Positive infinity.
+nan
+  Not a number.
+
+## time
+now()
+  Unix time in seconds (float).
+ms()
+  Unix time in milliseconds (int).
+clock()
+  Seconds since the program started (monotonic).
+sleep(seconds)
+  Pause.
+iso(t = now)
+  Unix time as "YYYY-MM-DDTHH:MM:SSZ" (UTC).
+
+## io
+read(path)
+  Whole file as text.
+write(path, text)
+  Write text to a file (replaces it).
+append(path, text)
+  Add text to the end of a file.
+lines(path)
+  File lines as a list.
+exists(path)
+  True if the path exists.
+ls(path = ".")
+  Sorted names in a folder.
+mkdir(path)
+  Make a folder (and its parents).
+remove(path)
+  Delete a file or an empty folder.
+
+## json
+parse(text)
+  JSON text to a value.
+dump(value, indent = nil)
+  Value to JSON text.
+load(path)
+  Read a JSON file.
+save(path, value, indent = 2)
+  Write a value as a JSON file.
+
+## rand
+seed(n)
+  Restart the random generator (same seed, same numbers).
+float()
+  Uniform number in [0, 1).
+int(lo, hi)
+  Whole number in [lo, hi], both ends included.
+uniform(lo, hi)
+  Uniform number in [lo, hi).
+normal(mean = 0, sd = 1)
+  Normal random number.
+choice(xs)
+  One random item.
+shuffle(xs)
+  Shuffle a list in place.
+sample(xs, k)
+  k items without replacement.
+bernoulli(p)
+  True with probability p.
+
+## gen
+int(lo = -1000, hi = 1000)
+  Whole numbers; tries edges and small values often.
+float(lo = -1000, hi = 1000)
+  Decimal numbers.
+bool()
+  true or false.
+choice(xs)
+  One of the given items.
+str(min = 0, max = 20, chars = nil)
+  Random strings.
+list(of, min = 0, max = 20)
+  Lists of values from another generator.
+just(value)
+  Always the same value.
+one_of(*generators)
+  Pick a generator at random each time.
+
+## stats
+mean(x)
+  Average.
+median(x)
+  Middle value.
+sum(x)
+  Sum (compensated).
+min(x)
+  Smallest value.
+max(x)
+  Largest value.
+skew(x)
+  Skewness (population, like scipy).
+kurtosis(x)
+  Excess kurtosis (population, like scipy).
+sem(x)
+  Standard error of the mean.
+var(x, ddof = 1)
+  Variance (sample by default).
+std(x, ddof = 1)
+  Standard deviation (sample by default).
+quantile(x, q)
+  Quantile(s), linear interpolation; q can be a list.
+iqr(x)
+  Interquartile range.
+mad(x)
+  Median absolute deviation.
+zscore(x)
+  Standardised values as a vec.
+describe(x)
+  count, missing, mean, std, min, p25, median, p75, max.
+ci_mean(x, level = 0.95)
+  t confidence interval for the mean.
+ttest(a, b, equal_var = false, alternative = "two-sided", level = 0.95)
+  Two-sample t-test (Welch by default): statistic, p_value, df, diff (a - b), ci, cohens_d.
+ttest_ind(a, b, equal_var = false, alternative = "two-sided", level = 0.95)
+  Same as ttest.
+ttest_1samp(x, mu = 0, alternative = "two-sided", level = 0.95)
+  One-sample t-test against mu.
+ttest_rel(a, b, alternative = "two-sided", level = 0.95)
+  Paired t-test.
+ztest(x, mu = 0, sigma = nil, alternative = "two-sided", level = 0.95)
+  z-test for a mean (sigma known, or sample sd).
+chi2(table, correction = true)
+  Chi-square test of independence on a contingency table; also cramers_v, expected.
+chi2_gof(observed, expected = nil)
+  Chi-square goodness of fit (expected defaults to equal).
+fisher(table, alternative = "two-sided")
+  Fisher exact test on a 2x2 table.
+mannwhitney(a, b, alternative = "two-sided", method = nil)
+  Mann-Whitney U (exact for small samples without ties, else normal approx).
+wilcoxon(a, b = nil, alternative = "two-sided", method = nil)
+  Wilcoxon signed-rank test (paired, or one sample against 0).
+ks(a, b, method = nil)
+  Two-sample Kolmogorov-Smirnov test.
+anova(*groups)
+  One-way ANOVA; also eta_squared.
+kruskal(*groups)
+  Kruskal-Wallis H test.
+levene(*groups, center = "median")
+  Equal-variance test (Brown-Forsythe by default).
+shapiro(x)
+  Shapiro-Wilk normality test.
+pearson(x, y, alternative = "two-sided", level = 0.95)
+  Pearson correlation r with p_value and CI.
+spearman(x, y, alternative = "two-sided")
+  Spearman rank correlation.
+kendall(x, y)
+  Kendall tau-b.
+linregress(x, y)
+  Simple linear regression: slope, intercept, r, p_value, stderr.
+ols(data, formula, names = nil, intercept = true, level = 0.95)
+  Least squares: ols(table, "y ~ a + b") or ols(y, [x1, x2]). Coefficients with se, t, p, ci; r2, adj_r2, f.
+cohens_d(a, b)
+  Standardised mean difference (pooled sd).
+hedges_g(a, b)
+  Cohen's d with small-sample correction.
+cliffs_delta(a, b)
+  Non-parametric effect size in [-1, 1].
+odds_ratio(table, level = 0.95)
+  Odds ratio of a 2x2 table with CI.
+relative_risk(table, level = 0.95)
+  Risk ratio of a 2x2 table with CI.
+bootstrap(x, fn = "mean", n = 10000, level = 0.95, method = "bca")
+  Bootstrap CI for any statistic (name or function).
+bootstrap_diff(a, b, fn = "mean", n = 10000, level = 0.95)
+  Bootstrap CI and p for fn(b) - fn(a).
+permutation_test(a, b, fn = "mean", n = 10000, alternative = "two-sided")
+  Permutation test of fn(a) - fn(b).
+adjust(p_values, method = "holm")
+  Multiple-testing correction: bonferroni, holm, hochberg, bh, by.
+norm_cdf(x, mean = 0, sd = 1)
+  Normal CDF.
+norm_ppf(p, mean = 0, sd = 1)
+  Normal quantile.
+norm_pdf(x, mean = 0, sd = 1)
+  Normal density.
+t_cdf(x, df)
+  Student t CDF.
+t_ppf(p, df)
+  Student t quantile.
+chi2_cdf(x, df)
+  Chi-square CDF.
+chi2_ppf(p, df)
+  Chi-square quantile.
+f_sf(x, d1, d2)
+  F distribution upper tail.
+beta_cdf(x, a, b)
+  Beta CDF.
+beta_ppf(p, a, b)
+  Beta quantile.
+binom_pmf(k, n, p)
+  Binomial probability of exactly k.
+binom_cdf(k, n, p)
+  Binomial probability of at most k.
+poisson_pmf(k, lam)
+  Poisson probability of exactly k.
+poisson_cdf(k, lam)
+  Poisson probability of at most k.
+
+## ab
+proportions(a, b, x_a, n_a, x_b, n_b, alpha = 0.05, alternative = "two-sided")
+  Two-proportion z-test from 0/1 data or counts: rate_a, rate_b, diff, ci_diff, lift, ci_lift, p_value, significant.
+means(a, b, alpha = 0.05, alternative = "two-sided")
+  Welch test on means with lift and lift CI.
+ratio(num_a, den_a, num_b, den_b, alpha = 0.05, alternative = "two-sided")
+  Ratio metric test (e.g. revenue per session) by delta method.
+cuped(y_a, x_a, y_b, x_b, alpha = 0.05, alternative = "two-sided")
+  CUPED variance reduction with a pre-period covariate x.
+srm(counts, expected = nil, threshold = 0.001)
+  Sample ratio mismatch check: did traffic split as planned?
+aa(data, n = 1000, alpha = 0.05, metric = nil)
+  A/A simulation: false positive rate should be near alpha.
+multi(groups, control = nil, metric = nil, correction = "holm", alpha = 0.05)
+  A/B/n: every variant against control, with corrected p-values.
+bayes(a, b, x_a, n_a, x_b, n_b, prior = [1, 1], draws = 100000, level = 0.95)
+  Bayesian Beta-Binomial: prob_b_better, expected losses, lift CI.
+bayes_means(a, b, level = 0.95)
+  Bayesian view of a mean difference (normal approximation).
+msprt(a, b, tau = nil, alpha = 0.05)
+  Mixture sequential test: always-valid p-value, safe to peek.
+sequential_bounds(looks = 5, alpha = 0.05, spending = "obrien-fleming", info = nil)
+  Group-sequential z boundaries (Lan-DeMets spending).
+segments(data, variant, metric, by, control = nil, alpha = 0.05)
+  Effect per segment of a table, with a Simpson's paradox warning.
+novelty(data, variant, metric, time, control = nil, periods = nil)
+  Lift per time period and its trend (fading novelty effect).
+guardrail(a, b, margin, relative = false, higher_is_better = true, alpha = 0.05)
+  Non-inferiority: B is not worse than A by more than margin.
+
+## power
+proportions(baseline, mde, alpha = 0.05, power = 0.8, ratio = 1, relative = true, alternative = "two-sided")
+  Users per group to detect a conversion change.
+means(sd, mde, alpha = 0.05, power = 0.8, ratio = 1, alternative = "two-sided")
+  Users per group to detect a mean change.
+mde_proportions(baseline, n_a, alpha = 0.05, power = 0.8, ratio = 1, alternative = "two-sided")
+  Smallest detectable conversion change for a sample size.
+mde_means(sd, n_a, alpha = 0.05, power = 0.8, ratio = 1, alternative = "two-sided")
+  Smallest detectable mean change for a sample size.
+achieved_proportions(rate_a, rate_b, n_a, alpha = 0.05, ratio = 1, alternative = "two-sided")
+  Power of a conversion test.
+achieved_means(sd, diff, n_a, alpha = 0.05, ratio = 1, alternative = "two-sided")
+  Power of a mean test.
+duration(total, daily, share = 1)
+  Days (and weeks) needed to reach `total` users.
+
+## bandit
+thompson(arms)
+  Thompson-sampling bandit object.
+ucb1(arms)
+  UCB1 bandit object.
+epsilon_greedy(arms, epsilon = 0.1)
+  Epsilon-greedy bandit object.
+simulate(arms, policy = "thompson", steps = 10000, epsilon = 0.1, runs = 1)
+  Play a policy against known success rates: pulls, regret, regret curve.
+
+## ml
+accuracy(y_true, y_pred)
+  Share of correct predictions.
+balanced_accuracy(y_true, y_pred)
+  Mean recall over classes.
+mcc(y_true, y_pred)
+  Matthews correlation coefficient.
+cohen_kappa(y_true, y_pred)
+  Agreement beyond chance.
+precision(y_true, y_pred, average = nil, pos_label = 1)
+  Precision (binary, macro, micro, weighted or none).
+recall(y_true, y_pred, average = nil, pos_label = 1)
+  Recall.
+f1(y_true, y_pred, average = nil, pos_label = 1)
+  F1 score.
+fbeta(y_true, y_pred, beta, average = nil, pos_label = 1)
+  F-beta score.
+confusion_matrix(y_true, y_pred)
+  labels and matrix[true][pred].
+classification_report(y_true, y_pred)
+  accuracy and a per-class precision/recall/f1/support table.
+roc_auc(y_true, scores, pos_label = 1)
+  ROC AUC; scores as rows gives one-vs-rest macro AUC.
+roc_curve(y_true, scores, pos_label = 1)
+  fpr, tpr, thresholds, auc.
+pr_curve(y_true, scores, pos_label = 1)
+  precision, recall, thresholds, average_precision.
+average_precision(y_true, scores, pos_label = 1)
+  Area under the precision-recall curve (sklearn definition).
+pr_auc(y_true, scores, pos_label = 1)
+  Same as average_precision.
+log_loss(y_true, probs, pos_label = 1)
+  Cross-entropy (binary probs or rows of class probs).
+brier(y_true, probs, pos_label = 1)
+  Mean squared error of probabilities.
+top_k_accuracy(y_true, scores, k = 2)
+  True class among the k highest scores.
+regression(y_true, y_pred)
+  mae, mse, rmse, r2, mape, smape, median_ae, max_error, explained_variance.
+mae(y_true, y_pred)
+  Mean absolute error.
+mse(y_true, y_pred)
+  Mean squared error.
+rmse(y_true, y_pred)
+  Root mean squared error.
+r2(y_true, y_pred)
+  Coefficient of determination.
+mape(y_true, y_pred)
+  Mean absolute percentage error.
+ndcg(relevance, k = nil, gain = "linear")
+  NDCG@k; relevance in ranked order, one list per query.
+precision_at_k(relevance, k)
+  Share of relevant items in the top k.
+recall_at_k(relevance, k)
+  Share of relevant items found in the top k.
+hit_rate(relevance, k)
+  Any relevant item in the top k.
+mrr(relevance, k = nil)
+  Mean reciprocal rank.
+map_at_k(relevance, k)
+  Mean average precision at k.
+calibration(y_true, probs, bins = 10, strategy = "uniform", pos_label = 1)
+  ECE, MCE and a reliability bin table.
+psi(reference, current, bins = 10)
+  Population stability index and level (none, moderate, major).
+wasserstein(a, b)
+  Earth mover's distance between two samples.
+kl(p, q)
+  KL divergence of two distributions (nats).
+js(p, q)
+  Jensen-Shannon divergence (bits, 0..1).
+drift(reference, current, columns = nil, psi_threshold = 0.2, p_threshold = 0.01)
+  Per-column drift report between two tables.
+fairness(y_true, y_pred, group, pos_label = 1)
+  Per-group rates, disparate impact, equal opportunity, equalized odds.
+mcnemar(y_true, pred_a, pred_b, exact = nil)
+  Do two classifiers differ on the same data?
+delong(y_true, scores_a, scores_b, pos_label = 1)
+  DeLong test for two correlated AUCs.
+paired_bootstrap(y_true, pred_a, pred_b, metric = "accuracy", n = 2000, level = 0.95)
+  CI and p for the difference in any metric.
+cv5x2(diffs)
+  Dietterich 5x2cv paired t-test.
+threshold_sweep(y_true, scores, metric = "f1", steps = 101, pos_label = 1)
+  Metrics at many thresholds and the best one.
+slices(data, y_true, y_pred, by, metric = "accuracy", min_n = 1)
+  Metric per slice of a table, worst first.
+check(data)
+  Missing values, duplicates, constant columns, ranges.
+leakage(train, test, columns = nil)
+  Rows of test that also appear in train.
+label_balance(y)
+  Counts, shares and imbalance ratio.
+schema(data, spec)
+  Check column types: {"age": "number", "name": "text"}.
+
+## llm
+http(url, mode = "openai", api = "chat", model = nil, headers = nil, timeout = 120, field = nil)
+  Connect to a model server (OpenAI-style or raw JSON). Extra named args become defaults.
+process(command, cwd = nil, timeout = 120)
+  Connect to a script that reads/writes one JSON line per request.
+mock(fn, name = "mock")
+  Fake model: fn(prompt, params) returns the text.
+eval_set(model, cases, metric = "exact", threshold = 0.5, concurrency = 4)
+  Run a golden set: score, pass_rate, latency, results table.
+compare_checkpoints(model_a, model_b, cases, metric = "exact", n_boot = 2000)
+  Is B better than A? CI, sign test, verdict, regressions.
+determinism(model, prompt, runs = 5)
+  Same prompt and settings, same answer?
+consistency(model, prompts, metric = "similarity")
+  Do paraphrases get the same answer?
+judge(model, answer, rubric, question = nil, scale = 10)
+  Your model grades an answer: score in [0, 1], rating, raw.
+load_test(model, prompts, requests = nil, concurrency = 8)
+  Latency percentiles, requests/s, tokens/s, error rate.
+latency_stats(ms)
+  p50, p90, p95, p99, mean, max of latencies.
+exact_match(pred, ref, normalize = true)
+  1 if equal after normalising (lists give the mean).
+token_f1(pred, ref)
+  SQuAD token F1.
+similarity(a, b)
+  1 - edit distance / length.
+edit_distance(a, b)
+  Levenshtein distance in characters.
+contains(text, sub, case_sensitive = false)
+  True if text contains sub.
+regex_match(text, pattern)
+  True if the pattern matches somewhere.
+extract(text, pattern, group = nil)
+  First match (or capture group), or nil.
+extract_all(text, pattern)
+  All matches.
+json_valid(text)
+  True if text is valid JSON.
+parse_json(text)
+  JSON found in a reply (code fences and prose allowed), or nil.
+json_schema(value, schema)
+  Check JSON (text or value) against a schema: valid, errors.
+bleu(candidate, references, max_n = 4, smooth = false)
+  Sentence BLEU (nltk).
+rouge(candidate, reference)
+  rouge1, rouge2, rougeL F-scores.
+rouge_l(pred, ref)
+  ROUGE-L F-score.
+rouge_n(candidate, reference, n = 1)
+  ROUGE-N precision, recall, f1.
+chrf(candidate, references)
+  chrF score 0..100 (sacrebleu).
+refusal(text)
+  True if the text looks like a refusal.
+pass_at_k(n, correct, k)
+  Unbiased pass@k estimate.
+perplexity_of(logprobs)
+  exp(-mean logprob).
+train_log(path)
+  Load a training log (JSONL/CSV, or a table).
+check_training(log, loss = nil, val_loss = nil, step = nil, grad_norm = nil, lr = nil, throughput = nil, window = 50)
+  Find training problems: healthy, problems, issues table, summary.
+compare_runs(a, b, metric = nil)
+  Compare two training runs over shared steps.
+plot(data, x, y, title = nil, log = false)
+  Line chart (same as the global plot).
+
+## methods str
+len()
+  Number of characters.
+upper()
+  Uppercase copy.
+lower()
+  Lowercase copy.
+strip(chars = nil)
+  Remove spaces (or chars) from both ends.
+lstrip(chars = nil)
+  Remove from the start.
+rstrip(chars = nil)
+  Remove from the end.
+split(sep = nil, max = nil)
+  Split on sep (or whitespace).
+join(items)
+  Join items with this string between.
+replace(old, new, count = nil)
+  Replace text.
+startswith(sub)
+  True if it starts with sub.
+endswith(sub)
+  True if it ends with sub.
+contains(sub)
+  True if sub is inside.
+find(sub)
+  Character index of sub, or -1.
+count(sub)
+  How many times sub appears.
+lines()
+  List of lines.
+chars()
+  List of characters.
+isdigit()
+  Only digits?
+isalpha()
+  Only letters?
+isspace()
+  Only whitespace?
+title()
+  Capitalise Each Word.
+capitalize()
+  Capitalise the first letter.
+ljust(width, fill = " ")
+  Pad on the right.
+rjust(width, fill = " ")
+  Pad on the left.
+center(width, fill = " ")
+  Pad both sides.
+format(spec)
+  Apply an f-string format spec.
+
+## methods list
+len()
+  Number of items.
+append(x)
+  Add to the end.
+push(x)
+  Same as append.
+pop(index = -1)
+  Remove and return an item.
+insert(index, x)
+  Insert before index.
+remove(x)
+  Remove the first equal item.
+extend(xs)
+  Add many items.
+index(x)
+  Position of the first equal item.
+count(x)
+  How many equal items.
+contains(x)
+  True if x is in the list.
+sort(key = nil, reverse = false)
+  Sort in place.
+sorted(key = nil, reverse = false)
+  Sorted copy.
+reverse()
+  Reverse in place.
+reversed()
+  Reversed copy.
+map(fn)
+  New list of fn(item).
+filter(fn)
+  Items where fn(item) is truthy.
+reduce(fn, init = nil)
+  Fold items into one value.
+each(fn)
+  Call fn on every item.
+find(fn)
+  First item where fn(item) is truthy, or nil.
+any(fn = nil)
+  Any item (or fn(item)) truthy?
+all(fn = nil)
+  Every item (or fn(item)) truthy?
+sum(start = 0)
+  Sum of items.
+min(key = nil)
+  Smallest item.
+max(key = nil)
+  Largest item.
+copy()
+  Shallow copy.
+clear()
+  Remove all items.
+join(sep = "")
+  Items as text joined by sep.
+first()
+  First item or nil.
+last()
+  Last item or nil.
+is_empty()
+  True if empty.
+unique()
+  Items without repeats, order kept.
+flatten()
+  One level of nested lists flattened.
+zip(other)
+  Pairs with another list.
+enumerate()
+  [index, item] pairs.
+take(n)
+  First n items.
+skip(n)
+  All but the first n items.
+chunk(n)
+  Groups of n items.
+group_by(fn)
+  Map of key to the items with that key.
+count_by(fn)
+  Map of key to how many items have it.
+
+## methods map
+len()
+  Number of keys.
+keys()
+  List of keys.
+values()
+  List of values.
+items()
+  List of [key, value] pairs.
+get(key, default = nil)
+  Value or default.
+has(key)
+  True if the key exists.
+contains(key)
+  Same as has.
+pop(key, default = nil)
+  Remove a key and return its value.
+remove(key, default = nil)
+  Same as pop.
+update(other)
+  Copy all keys from another map.
+copy()
+  Shallow copy.
+clear()
+  Remove all keys.
+is_empty()
+  True if empty.
+
+## methods range
+len()
+  Number of values.
+list()
+  Values as a list.
+
+## methods vec
+len()
+  Number of values.
+sum()
+  Sum.
+mean()
+  Average.
+median()
+  Middle value.
+var(ddof = 1)
+  Variance.
+std(ddof = 1)
+  Standard deviation.
+sem()
+  Standard error of the mean.
+min()
+  Smallest value.
+max()
+  Largest value.
+quantile(q)
+  Quantile(s).
+skew()
+  Skewness.
+kurtosis()
+  Excess kurtosis.
+cumsum()
+  Running total.
+diff()
+  Differences between neighbours.
+abs()
+  Absolute values.
+sqrt()
+  Square roots.
+log()
+  Natural logs.
+exp()
+  Exponentials.
+round(ndigits = 0)
+  Rounded values.
+clip(lo = -inf, hi = inf)
+  Values limited to [lo, hi].
+sorted(reverse = false)
+  Sorted copy.
+rank()
+  Average ranks (ties share).
+zscore()
+  Standardised values.
+argmin()
+  Index of the smallest value.
+argmax()
+  Index of the largest value.
+dot(other)
+  Dot product.
+corr(other)
+  Pearson correlation.
+cov(other)
+  Sample covariance.
+head(n = 5)
+  First n values.
+tail(n = 5)
+  Last n values.
+list()
+  Values as a list.
+filter(fn)
+  Values where fn(x) is truthy.
+map(fn)
+  fn applied to each value.
+dropna()
+  Without NaN (missing) values.
+isnan()
+  0/1 mask of missing values.
+unique()
+  Sorted unique values.
+describe()
+  Summary statistics.
+histogram(bins = 10)
+  edges and counts.
+any()
+  Any non-zero value?
+all()
+  All values non-zero?
+eq(x)
+  0/1 mask of values equal to x.
+ne(x)
+  0/1 mask of values not equal to x.
+between(lo, hi)
+  0/1 mask of values in [lo, hi].
+sample(n, replace = false)
+  Random values.
+count()
+  Number of non-zero, non-missing values.
+prod()
+  Product.
+
+## methods table
+col(name)
+  Column as a vec (numbers) or list (text).
+row(i)
+  One row as a map.
+rows()
+  All rows as maps.
+head(n = 5)
+  First rows.
+tail(n = 5)
+  Last rows.
+select(*names)
+  Only these columns.
+drop(*names)
+  Without these columns.
+rename(names)
+  Rename columns: {"old": "new"}.
+filter(fn)
+  Rows where fn(row) is truthy.
+where(col, op, value)
+  Fast filter: op is == != < <= > >= in, not in.
+sort(by, reverse = false)
+  Sort by one or more columns (missing last).
+with_col(name, values)
+  Add or replace a column (values, one value, or fn(row)).
+group_by(by, aggs)
+  Aggregate per group: {"n": "count()", "avg": "mean(price)"}.
+groups(by)
+  Map of group key to sub-table.
+join(other, on, how = "inner")
+  Join with another table (inner or left).
+describe()
+  Summary of every number column.
+value_counts(col)
+  Map of value to count, most common first.
+unique(col)
+  Distinct values in order.
+dropna(*cols)
+  Rows without missing values (in cols, or anywhere).
+sample(n, replace = false)
+  Random rows.
+shuffle()
+  Rows in random order.
+concat(other)
+  Rows of both tables.
+save_csv(path)
+  Write as CSV.
+len()
+  Number of rows.
+
+## methods generator
+sample()
+  One random value.
+
+## methods bandit
+choose()
+  Arm to play next.
+update(arm, reward)
+  Record a reward for an arm.
+stats()
+  Pulls and mean reward per arm.
+prob_best(draws = 10000)
+  Chance each arm is the best (Thompson posterior).
+
+## methods model
+generate(prompt, system = nil, logprobs = false, concurrency = nil)
+  Full reply: text, tokens, latency_ms, ttft_ms, tokens_per_sec, logprobs.
+ask(prompt)
+  Reply text only.
+chat(messages)
+  Reply to a list of {"role", "content"} messages.
+stream(prompt)
+  Streamed reply with time to first token.
+batch(prompts, concurrency = 4)
+  Many prompts in parallel.
+logprobs(prompt)
+  Token log-probabilities of the reply.
+perplexity(text)
+  Perplexity of text (completions API with echo).
+
+## methods train_log
+check(loss = nil, val_loss = nil, step = nil, grad_norm = nil, lr = nil, throughput = nil, window = 50)
+  Find training problems.
+plot(y = nil, x = nil, title = nil, log = false)
+  Chart of columns over steps.
+compare(other, metric = nil)
+  Compare with another run.
+col(name)
+  Column as a vec (missing = NaN).
+
+## methods chart
+save(path)
+  Write the SVG to a file.

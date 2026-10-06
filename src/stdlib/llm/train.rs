@@ -7,6 +7,8 @@ use crate::vm::*;
 use std::rc::Rc;
 
 // columns of numbers; None = not logged on that row, Some(NaN) = logged as NaN
+pub const METHODS: &[&str] = &["check", "plot", "compare", "col"];
+
 pub struct TrainLog {
     pub path: String,
     pub names: Vec<String>,
@@ -524,7 +526,7 @@ impl Object for TrainLog {
         }
     }
     fn methods(&self) -> &'static [&'static str] {
-        &["check", "plot", "compare", "col"]
+        METHODS
     }
     fn call_method(&self, _vm: &mut Vm, _this: &Value, name: &str, a: Args) -> R {
         match name {

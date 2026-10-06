@@ -171,7 +171,7 @@ impl Table {
     }
 }
 
-const METHODS: &[&str] = &[
+pub const METHODS: &[&str] = &[
     "col",
     "row",
     "rows",

@@ -26,7 +26,7 @@ pub struct Model {
     pub defaults: Map<String, J>,
 }
 
-const MODEL_METHODS: &[&str] = &["generate", "ask", "chat", "stream", "batch", "logprobs", "perplexity"];
+pub const MODEL_METHODS: &[&str] = &["generate", "ask", "chat", "stream", "batch", "logprobs", "perplexity"];
 
 fn gen_value(o: &GenOut) -> Value {
     let tps = match (o.tokens_out, o.latency_ms) {

@@ -20,7 +20,24 @@ mpp check file.mpp              # find errors, do not run
 mpp build file.mpp              # write file.mppc (bytecode)
 mpp build --exe file.mpp        # write a standalone executable
 mpp repl                        # interactive prompt
+mpp test / mpp bench            # run test and bench blocks (see Testing)
+mpp fmt [--check] [paths]       # format code
+mpp doc stats.ttest             # docs for any built-in
+mpp new myproject               # start a project
+mpp lsp                         # language server for editors
 ```
+
+Docs: [language reference](docs/language.md) · [standard library](docs/stdlib.md) ·
+[editor setup](docs/editors.md) · [design](docs/design.md)
+
+## Editors
+
+- **Neovim / Vim**: add `editors/vim` as a plugin (highlighting, indent, `:make`, `:MppFmt`,
+  `:MppRun`, `:MppTest`; Neovim starts the language server by itself).
+- **VS Code**: `cd editors/vscode && npm install && npm run package`, then install the `.vsix`.
+- **Anything with LSP**: run `mpp lsp` for `.mpp` files.
+
+See [docs/editors.md](docs/editors.md).
 
 ## Testing
 

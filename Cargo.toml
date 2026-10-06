@@ -22,6 +22,7 @@ csv = "~1.4"
 sha2 = "~0.11"
 ureq = { version = "~3.4", default-features = false, features = ["json", "rustls"] }
 regex = "~1.13"
+lsp-server = "~0.10"
 statrs = { version = "~0.19", default-features = false, features = ["std"] }
 
 [profile.release]

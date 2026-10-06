@@ -58,12 +58,14 @@ pub fn module(name: &str) -> Option<IndexMap<Rc<str>, Value>> {
     Some(m)
 }
 
+pub const RANGE_METHODS: &[&str] = &["len", "list"];
+
 pub fn has_method(recv: &Value, name: &str) -> bool {
     let names: &[&str] = match recv {
         Value::Str(_) => str::METHODS,
         Value::List(_) => list::METHODS,
         Value::Map(_) => map::METHODS,
-        Value::Range(..) => &["len", "list"],
+        Value::Range(..) => RANGE_METHODS,
         Value::Object(o) => o.methods(),
         _ => &[],
     };

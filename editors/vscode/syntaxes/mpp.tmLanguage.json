@@ -1,0 +1,105 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Muaz++",
+  "scopeName": "source.mpp",
+  "fileTypes": ["mpp"],
+  "patterns": [{ "include": "#code" }],
+  "repository": {
+    "code": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#test-block" },
+        { "include": "#expect" },
+        { "include": "#fstring" },
+        { "include": "#string" },
+        { "include": "#number" },
+        { "include": "#function-def" },
+        { "include": "#class-def" },
+        { "include": "#keyword" },
+        { "include": "#constant" },
+        { "include": "#builtin" },
+        { "include": "#call" },
+        { "include": "#operator" }
+      ]
+    },
+    "comment": { "name": "comment.line.number-sign.mpp", "match": "#.*$" },
+    "test-block": {
+      "match": "^\\s*(test|experiment|bench|property)(?=\\s+[\"'])",
+      "captures": { "1": { "name": "keyword.control.test.mpp" } }
+    },
+    "expect": {
+      "patterns": [
+        { "match": "^\\s*(expect|report)\\b(?!\\s*[=,.])", "captures": { "1": { "name": "keyword.other.expect.mpp" } } },
+        { "match": "\\bwithin\\b", "name": "keyword.other.expect.mpp" }
+      ]
+    },
+    "escape": { "name": "constant.character.escape.mpp", "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[ntr0\\\\\"'{}])" },
+    "string": {
+      "patterns": [
+        { "name": "string.quoted.triple.mpp", "begin": "\"\"\"", "end": "\"\"\"", "patterns": [{ "include": "#escape" }] },
+        { "name": "string.quoted.raw.mpp", "match": "r\"[^\"\\n]*\"|r'[^'\\n]*'" },
+        { "name": "string.quoted.double.mpp", "begin": "\"", "end": "\"|$", "patterns": [{ "include": "#escape" }] },
+        { "name": "string.quoted.single.mpp", "begin": "'", "end": "'|$", "patterns": [{ "include": "#escape" }] }
+      ]
+    },
+    "fstring": {
+      "patterns": [
+        { "name": "string.interpolated.mpp", "begin": "f\"\"\"", "end": "\"\"\"", "patterns": [{ "include": "#interp" }, { "include": "#escape" }] },
+        { "name": "string.interpolated.mpp", "begin": "f\"", "end": "\"|$", "patterns": [{ "include": "#interp" }, { "include": "#escape" }] },
+        { "name": "string.interpolated.mpp", "begin": "f'", "end": "'|$", "patterns": [{ "include": "#interp" }, { "include": "#escape" }] }
+      ]
+    },
+    "interp": {
+      "patterns": [
+        { "name": "constant.character.escape.mpp", "match": "\\{\\{|\\}\\}" },
+        {
+          "begin": "\\{",
+          "end": "(:[^}]*)?\\}",
+          "beginCaptures": { "0": { "name": "punctuation.section.embedded.begin.mpp" } },
+          "endCaptures": { "0": { "name": "punctuation.section.embedded.end.mpp" }, "1": { "name": "storage.modifier.format.mpp" } },
+          "contentName": "meta.embedded.mpp",
+          "patterns": [{ "include": "#code" }]
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.mpp",
+      "match": "\\b(0[xX][0-9A-Fa-f_]+|0[bB][01_]+|0[oO][0-7_]+|\\d[\\d_]*(\\.\\d[\\d_]*)?([eE][+-]?\\d+)?)\\b"
+    },
+    "function-def": {
+      "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": { "1": { "name": "storage.type.function.mpp" }, "2": { "name": "entity.name.function.mpp" } }
+    },
+    "class-def": {
+      "match": "\\b(class)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*:\\s*([A-Za-z_][A-Za-z0-9_.]*))?",
+      "captures": { "1": { "name": "storage.type.class.mpp" }, "2": { "name": "entity.name.type.class.mpp" }, "3": { "name": "entity.other.inherited-class.mpp" } }
+    },
+    "keyword": {
+      "patterns": [
+        { "name": "keyword.control.mpp", "match": "\\b(if|elif|else|while|for|in|break|continue|return|try|catch|throw)\\b" },
+        { "name": "keyword.control.import.mpp", "match": "\\b(import|as)\\b" },
+        { "name": "storage.type.mpp", "match": "\\b(fn|class|const|global|nonlocal)\\b" },
+        { "name": "keyword.operator.logical.mpp", "match": "\\b(and|or|not)\\b" },
+        { "name": "variable.language.mpp", "match": "\\b(self|super)\\b" }
+      ]
+    },
+    "constant": { "name": "constant.language.mpp", "match": "\\b(true|false|nil)\\b" },
+    "builtin": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.mpp",
+          "match": "\\b(print|len|type|str|repr|int|float|bool|list|range|abs|min|max|sum|round|sorted|reversed|enumerate|zip|any|all|input|error|assert|env|args|exit|warn|chr|ord|copy|isinstance|callable|skip|expect_throws|expect_snapshot|note|vec|linspace|table|load_csv|load_jsonl|load_json|plot)\\b(?=\\s*\\()"
+        },
+        { "name": "support.class.module.mpp", "match": "\\b(math|time|io|json|rand|gen|stats|ab|power|bandit|ml|llm)\\b(?=\\s*\\.)" }
+      ]
+    },
+    "call": { "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()", "captures": { "1": { "name": "entity.name.function.call.mpp" } } },
+    "operator": {
+      "patterns": [
+        { "name": "storage.type.function.arrow.mpp", "match": "=>" },
+        { "name": "keyword.operator.range.mpp", "match": "\\.\\.=?" },
+        { "name": "keyword.operator.mpp", "match": "\\*\\*|//|~=|==|!=|<=|>=|[-+*/%]=|[-+*/%<>=?:]" }
+      ]
+    }
+  }
+}

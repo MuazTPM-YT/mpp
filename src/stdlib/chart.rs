@@ -4,6 +4,8 @@ use crate::vm::*;
 use std::fmt::Write as _;
 use std::rc::Rc;
 
+pub const METHODS: &[&str] = &["save"];
+
 pub struct Chart {
     pub title: String,
     pub svg: String,
@@ -27,7 +29,7 @@ impl Object for Chart {
         }
     }
     fn methods(&self) -> &'static [&'static str] {
-        &["save"]
+        METHODS
     }
     fn call_method(&self, _vm: &mut Vm, _this: &Value, name: &str, a: Args) -> R {
         match name {

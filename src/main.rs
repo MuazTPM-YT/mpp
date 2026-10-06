@@ -30,6 +30,9 @@ enum Cmd {
     Check {
         #[arg(required = true)]
         files: Vec<String>,
+        /// One line per error: file:line:col: error: message (for editors and CI)
+        #[arg(long)]
+        short: bool,
     },
     /// Compile to bytecode (.mppc) or a standalone executable
     Build {
@@ -43,6 +46,24 @@ enum Cmd {
     },
     /// Interactive prompt
     Repl,
+    /// Format .mpp files in place (`-` reads stdin, writes stdout)
+    Fmt {
+        /// Files or folders (default: current folder)
+        paths: Vec<String>,
+        /// Only report files that are not formatted; exit 1 if any
+        #[arg(long)]
+        check: bool,
+    },
+    /// Show docs for a built-in, like `mpp doc stats.ttest` (or --markdown for all)
+    Doc {
+        name: Option<String>,
+        #[arg(long)]
+        markdown: bool,
+    },
+    /// Make a new project folder
+    New { name: String },
+    /// Language server for editors (VS Code, Neovim, Vim...)
+    Lsp,
     /// Run test, experiment and property blocks
     Test(TestArgs),
     /// Run bench blocks
@@ -117,12 +138,22 @@ fn main() -> ExitCode {
             }
             code(driver::run_file(&file, args, seed.unwrap_or_else(random_seed)))
         }
-        Cmd::Check { files } => {
+        Cmd::Check { files, short } => {
             let mut bad = 0;
             for f in &files {
                 let mut sources = Sources::default();
                 match compile::load_program(f, &mut sources) {
+                    Ok(_) if short => {}
                     Ok(_) => println!("ok  {f}"),
+                    Err(d) if short => {
+                        bad += 1;
+                        for (file, diag) in &d {
+                            let src = sources.source(file).unwrap_or("");
+                            let (l, c) = mpp::diag::LineIndex::new(src).line_col(src, diag.span.start);
+                            let note = diag.note.as_ref().map(|n| format!(" ({n})")).unwrap_or_default();
+                            println!("{file}:{l}:{c}: error: {}{note}", diag.msg);
+                        }
+                    }
                     Err(d) => {
                         bad += 1;
                         driver::report_diags(&sources, &d);
@@ -160,6 +191,10 @@ fn main() -> ExitCode {
             }
         }
         Cmd::Repl => repl(),
+        Cmd::Fmt { paths, check } => fmt_cmd(paths, check),
+        Cmd::Doc { name, markdown } => doc_cmd(name, markdown),
+        Cmd::New { name } => new_cmd(&name),
+        Cmd::Lsp => code(mpp::lsp::run()),
         Cmd::Test(a) => run_tests(a, false),
         Cmd::Bench(a) => run_tests(a, true),
     }
@@ -280,6 +315,161 @@ fn run_tests(a: TestArgs, bench: bool) -> ExitCode {
         }
     }
     code(if bad { 1 } else { 0 })
+}
+
+// all .mpp files under the given paths
+fn mpp_files(paths: &[String]) -> Vec<String> {
+    fn walk(p: &std::path::Path, out: &mut Vec<String>) {
+        if p.is_dir() {
+            let Ok(rd) = std::fs::read_dir(p) else { return };
+            let mut es: Vec<_> = rd.flatten().map(|e| e.path()).collect();
+            es.sort();
+            for e in es {
+                let name = e.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+                if !(e.is_dir() && (name.starts_with('.') || name == "target" || name == "node_modules")) {
+                    walk(&e, out);
+                }
+            }
+        } else if p.extension().is_some_and(|x| x == "mpp") {
+            out.push(p.to_string_lossy().to_string());
+        }
+    }
+    let mut out = Vec::new();
+    for p in paths {
+        let path = std::path::Path::new(p);
+        if path.is_file() {
+            out.push(p.clone());
+        } else {
+            walk(path, &mut out);
+        }
+    }
+    out
+}
+
+fn fmt_cmd(paths: Vec<String>, check: bool) -> ExitCode {
+    use std::io::Read;
+    if paths.len() == 1 && paths[0] == "-" {
+        let mut src = String::new();
+        if std::io::stdin().read_to_string(&mut src).is_err() {
+            eprintln!("error: cannot read stdin");
+            return code(2);
+        }
+        return match mpp::fmt::format(&src) {
+            Ok(out) => {
+                print!("{out}");
+                code(0)
+            }
+            Err(d) => {
+                let mut s = Sources::default();
+                s.add("<stdin>", src);
+                s.report("<stdin>", &d);
+                code(2)
+            }
+        };
+    }
+    let paths = if paths.is_empty() { vec![".".to_string()] } else { paths };
+    let (mut changed, mut bad) = (0, 0);
+    for f in mpp_files(&paths) {
+        let Ok(src) = std::fs::read_to_string(&f) else {
+            eprintln!("error: cannot read {f}");
+            bad += 1;
+            continue;
+        };
+        match mpp::fmt::format(&src) {
+            Ok(out) if out == src => {}
+            Ok(out) => {
+                changed += 1;
+                if check {
+                    println!("would reformat {f}");
+                } else if let Err(e) = std::fs::write(&f, out) {
+                    eprintln!("error: cannot write {f}: {e}");
+                    bad += 1;
+                } else {
+                    println!("formatted {f}");
+                }
+            }
+            Err(d) => {
+                bad += 1;
+                let mut s = Sources::default();
+                s.add(&f, src);
+                s.report(&f, &d);
+            }
+        }
+    }
+    if changed == 0 && bad == 0 {
+        println!("all files already formatted");
+    }
+    code(if bad > 0 {
+        2
+    } else if check && changed > 0 {
+        1
+    } else {
+        0
+    })
+}
+
+fn doc_cmd(name: Option<String>, markdown: bool) -> ExitCode {
+    if markdown {
+        print!("{}", mpp::docs::markdown());
+        return code(0);
+    }
+    let Some(q) = name else {
+        println!("usage: mpp doc NAME   (print, stats.ttest, list.append, table.group_by, llm.eval_set ...)");
+        println!("modules: {}", mpp::stdlib::MODULES.join(", "));
+        return code(0);
+    };
+    let hits = mpp::docs::lookup(&q);
+    if hits.is_empty() {
+        eprintln!("no docs for `{q}`");
+        return code(1);
+    }
+    for e in hits {
+        let prefix = match e.section.strip_prefix("methods ") {
+            Some(t) => format!("{t}."),
+            None if mpp::stdlib::is_module(e.section) => format!("{}.", e.section),
+            None => String::new(),
+        };
+        println!("{prefix}{}\n    {}\n", e.signature, e.doc);
+    }
+    code(0)
+}
+
+// mpp new NAME: a ready-to-run project
+fn new_cmd(name: &str) -> ExitCode {
+    let root = std::path::Path::new(name);
+    if root.exists() {
+        eprintln!("error: `{name}` already exists");
+        return code(1);
+    }
+    let files: &[(&str, &str)] = &[
+        (
+            "main.mpp",
+            "# run: mpp run main.mpp\nimport stats\n\ndata = load_csv(\"data/sample.csv\")\nprint(data.describe())\nprint(stats.ttest(data.where(\"group\", \"==\", \"A\").value, data.where(\"group\", \"==\", \"B\").value))\n",
+        ),
+        (
+            "tests/main_test.mpp",
+            "# run: mpp test\nimport ab\n\ndata = load_csv(\"data/sample.csv\")\n\ntest \"data has both groups\" {\n    expect data.unique(\"group\") == [\"A\", \"B\"]\n}\n\nexperiment \"B beats A\" {\n    g = data.groups(\"group\")\n    r = ab.means(g.A.value, g.B.value)\n    report \"result\": r\n    expect r.lift > 0\n}\n",
+        ),
+        ("data/sample.csv", "group,value\nA,10.1\nA,9.8\nA,10.4\nA,9.9\nA,10.0\nB,10.9\nB,11.2\nB,10.7\nB,11.0\nB,11.4\n"),
+        (".gitignore", ".env\n*.mppc\n/report.html\n"),
+        (".env.example", "# copy to .env; read with env(\"NAME\")\nMODEL_URL=http://127.0.0.1:8080\n"),
+        ("README.md", "# project\n\n```sh\nmpp run main.mpp\nmpp test\nmpp test --report html:report.html\n```\n"),
+    ];
+    for (rel, body) in files {
+        let p = root.join(rel);
+        if let Some(d) = p.parent()
+            && let Err(e) = std::fs::create_dir_all(d)
+        {
+            eprintln!("error: {e}");
+            return code(1);
+        }
+        if let Err(e) = std::fs::write(&p, body) {
+            eprintln!("error: cannot write {}: {e}", p.display());
+            return code(1);
+        }
+    }
+    println!("made {name}/ — try: cd {name} && mpp run main.mpp && mpp test");
+    code(0)
 }
 
 fn repl() -> ExitCode {

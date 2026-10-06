@@ -20,7 +20,7 @@ fn num_out(x: f64) -> Value {
     Value::Float(x)
 }
 
-const METHODS: &[&str] = &[
+pub const METHODS: &[&str] = &[
     "len",
     "sum",
     "mean",

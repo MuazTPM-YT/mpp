@@ -2,6 +2,8 @@ use crate::vm::*;
 use std::rc::Rc;
 
 // input generator for property tests
+pub const METHODS: &[&str] = &["sample"];
+
 pub enum Gen {
     Int(i64, i64),
     Float(f64, f64),
@@ -33,7 +35,7 @@ impl Object for Gen {
         }
     }
     fn methods(&self) -> &'static [&'static str] {
-        &["sample"]
+        METHODS
     }
     fn call_method(&self, vm: &mut Vm, _this: &Value, name: &str, a: Args) -> R {
         match name {
